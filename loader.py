@@ -8,6 +8,7 @@ bot = Bot(token=config.BOT_TOKEN, parse_mode=types.ParseMode.HTML)
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
-json_db = 'ad_id.json'
-database_file = 'sapdb.db'
+
+json_db = '/Users/dima/PycharmProjects/sapbazar/ad_id.json'
+database_file = '/Users/dima/PycharmProjects/sapbazar/sapdb.db'
 db_manager = SQLContextManager(database_file)

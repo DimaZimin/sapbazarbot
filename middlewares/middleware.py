@@ -8,5 +8,7 @@ class CreateJob(StatesGroup):
     company_name = ()
     job_description = State()
     job_category = State()
+    job_category_add = State()
     job_location = State()
+    job_location_add = State()
     send_invoice = State()

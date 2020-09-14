@@ -1,12 +1,16 @@
+import asyncio
+import logging
 from aiogram.dispatcher import FSMContext
-from aiogram.types import CallbackQuery, Message, ContentTypes
-from loader import dp, bot
-from aiogram import types
-from keyboards.inline.keyboard import CATEGORIES, LOCATIONS, start_keys, start_subscription
+from aiogram.types import CallbackQuery, ReplyKeyboardRemove
+from keyboards.inline.keyboard import CATEGORIES, LOCATIONS, start_subscription, category_keys, \
+    category_callback, localization_keys, location_callback, unsubscribe_key, blog_sub
+from middlewares.middleware import Form
+from utils.parsers import parsers
+from keyboards.inline.keyboard import start_keys
+from loader import dp, bot, db_manager, json_db
 
 
-
-@dp.callback_query_handler(start_subscription.filter(action='next'))
+@dp.callback_query_handler(start_subscription.filter(action='subscribe'))
 async def process_subscription(call: CallbackQuery):
     """
     Callback query handler that catches 'next' action which is associated with pressing 'Subscribe' button.
@@ -23,7 +27,7 @@ async def process_subscription(call: CallbackQuery):
 
 
 @dp.callback_query_handler(category_callback.filter(category=CATEGORIES))
-async def add_category(call: CallbackQuery):
+async def choose_category(call: CallbackQuery):
     """
 
     Callback query handler catches name of a category. Categories are stored in keyboard.py CATEGORIES variable.
@@ -67,21 +71,29 @@ async def set_location(call: CallbackQuery, state: FSMContext):
     await state.finish()
     await call.message.edit_reply_markup()
     await call.message.answer(f'{location} location has been chosen. '
-                              f'You have successfully subscribed for job alert!',
-                              reply_markup=unsubscribe_key)
+                              f'Do you want to subcribe on SAP blog',
+                              reply_markup=blog_sub())
 
 
-@dp.message_handler(filters.Text(contains=['Unsubscribe']))
-async def unsubscribe(message: types.Message):
+@dp.callback_query_handler(text=['yes', 'no'])
+async def subscribe_on_blog(call: CallbackQuery):
+    await call.answer(cache_time=60)
+    await call.message.edit_reply_markup()
+    await call.message.answer(f'You have successfully subscribed for job alert!',
+                              reply_markup=unsubscribe_key())
+
+
+@dp.callback_query_handler(text='unsubscribe')
+async def unsubscribe(call: CallbackQuery):
     """
     Unsubscribe button function
     """
-    user_id = message.from_user.id
+    user_id = call.from_user.id
     db_manager.remove_subscription(user_id)
     db_manager.update_subscription(user_id, status=False)
     logging.info(f'USER ID: {user_id} UNSUSCRIBED')
-    await message.answer("You have successfully unsubscribed from job alert", reply_markup=ReplyKeyboardRemove())
-    await message.answer("Thank you for choosing our service", reply_markup=start_keys())
+    await call.message.answer("You have successfully unsubscribed from job alert", reply_markup=ReplyKeyboardRemove())
+    await call.message.answer("Thank you for choosing our service", reply_markup=start_keys(user_id))
 
 
 def check_user_requirements(user_id, url) -> str:
@@ -94,7 +106,7 @@ def check_user_requirements(user_id, url) -> str:
     """
     user_categories = db_manager.get_user_categories(user_id)
     user_location = db_manager.get_user_location(user_id)
-    html = parser.HTMLParser(url)
+    html = parsers.HTMLParser(url)
     if html.location() == user_location and html.category() in user_categories:
         return url
 
@@ -106,24 +118,24 @@ async def scheduled_task(wait_time):
     """
     while True:
         await asyncio.sleep(wait_time)
-        logging.info(f'SCHEDULED TASK PERFORMING...')
-        json_file = parser.JSONContextManager(json_db)
-        xml = parser.XMLParser()
-        old_ads = json_file.json_old_ads()
+        logging.info(f'SCHEDULED TASK IS EXECUTING...')
+        json_file = parsers.JSONContextManager(json_db)
+        xml = parsers.XMLParser()
+        old_ads = json_file.get_values('job_urls')
         logging.info(f'CURRENT ADS IDS ({len(xml.get_ids())}) : {xml.get_ids()}\n')
         logging.info(f'OLD ADS : {len(old_ads)}{old_ads}\n')
         logging.info(f'DIFF (NEW ADS): {len(xml.get_ids()) - len(old_ads)}')
         logging.info(f'JSON FILE UPDATING...')
         json_file.update_json()
         subscribers = [sub[0] for sub in db_manager.get_active_subscriptions()]
-        new_ads = json_file.json_new_ads()
+        new_ads = json_file.get_values('job_new')
         logging.info(f'NEW ADS: {new_ads}')
         if new_ads:
             for subscriber in subscribers:
                 for url in new_ads:
                     link = check_user_requirements(subscriber, url)
                     if link:
-                        html = parser.HTMLParser(link)
+                        html = parsers.HTMLParser(link)
                         logging.info(f'URL {link} SENT TO USER ID: {subscriber}')
                         await bot.send_message(subscriber, text=f"<a href='{link}'>New job openning: "
                                                                 f"{html.job_title()}</a>",

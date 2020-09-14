@@ -1,5 +1,5 @@
 {
-    "urls": [
+    "job_urls": [
         "https://jobs.sapbazar.com/job/%d1%80%d0%b0%d0%b7%d1%80%d0%b0%d0%b1%d0%be%d1%82%d1%87%d0%b8%d0%ba-abap-at-%d0%be%d0%be%d0%be-itrecnet-moscow/1035",
         "https://jobs.sapbazar.com/job/%d1%80%d1%83%d0%ba%d0%be%d0%b2%d0%be%d0%b4%d0%b8%d1%82%d0%b5%d0%bb%d1%8c-%d0%bf%d1%80%d0%be%d0%b5%d0%ba%d1%82%d0%be%d0%b2-%d0%bf%d0%be-%d0%b8%d0%bd%d1%84%d0%be%d1%80%d0%bc%d0%b0%d1%86%d0%b8%d0%be-russia/1057",
         "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-bi-at-freelance-remote/1056",
@@ -23,5 +23,265 @@
         "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-basis-at-sabris-russia/1038",
         "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-mm-at-freelance-remote/1036"
     ],
-    "new": []
+    "job_new": [],
+    "blog_urls": [
+        [
+            "https://sapbazar.com/articles/item/4274-how-to-use-the-rap-generator",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4273-working-on-something-that-really-makes-a-difference",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4272-managing-alerts-and-notifications-in-employee-central",
+            "success factors"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4271-s4hana-in-5-minutes-or-less-interaction-between-co-and-fi",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4269-configuring-sap-solution-manager-72-to-support-sap-hana-db-instances",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4270-how-to-determine-sap-hana-partitioning-algorithm",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4267-commodity-code-conundrum",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4265-transition-to-sap-s4hana-on-azure-and-accelerate-your-manufacturing-succes",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4266-sneak-peek-into-s4hana-1909-finance-innovations-part-2",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4264-sap-fiori-for-sap-s4hana-overview-of-tools-for-maintaining-custom-launchpad-content-and-layout",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4263-how-to-find-all-the-important-transaction-code-related-to-sap-financial-supply-chain-management-by-using-area-menu-fscm",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4262-adding-hana-system-to-solution-manager-72-step-by-step-guide",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4268-being-a-programmer-part-1",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4261-connect-ms-excel-to-sap-hana-databaseanalysis-in-excel-with-hana-data",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4259-out-now-sap-fiori-design-guidelines-versions-178-and-180",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4260-turn-learning-into-achieving-how-covid-has-reshaped-it-learning",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4258-how-to-find-the-different-standard-table-related-to-sap-workflow-very-important-for-sap-workflow-reporting",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4257-advanced-available-to-promiseaatp-s4hana-1809-advanced-features",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4256-setting-up-hana-express-using-docker-on-windows-subsystem-for-linux-2",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4255-installation-of-sap-hanadatabase-with-extended-application-service-advanced-model-xsa-in-yandexcloud",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4254-easy-way-to-create-custom-country-specific-replication-classes-in-the-ptp-framework",
+            "success factors"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4253-sap-fiori-and-ui5-the-difference-in-100-seconds",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/sap-podcasts/sap-basis-podcasts/item/4252-sap-security-patch-day-dsag-jahreskongress-live-berechtigungen-prfen-rz10-live-vom-09092020",
+            "SAP Basis Podcast"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4251-material-staging-of-release-order-parts-using-two-ewm-managed-storage-locations-r1-s4-hana-1909",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4250-how-you-can-see-which-activity-is-taking-more-time-in-sap-using-stats",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4233-enriching-abap-consumer-proxy-with-binding-information",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4249-new-sap-business-scenario-recommendations-on-spotlight-get-your-free-recommendations-for-sap-s4hana-today",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4248-alv-grid-with-multiple-header-lines",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4239-programmers-day-mission-2020",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4240-5-resources-for-getting-started-with-more-efficient-sap-fiori-app-development",
+            "SAP UI5"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4238-new-sap-training-class-extensibility-for-sap-s4hana",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4241-start-your-free-trial-for-sap-cloud-platform-launchpad",
+            "SAP UI5"
+        ]
+    ],
+    "blog_new": [
+        [
+            "https://sapbazar.com/articles/item/4274-how-to-use-the-rap-generator",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4273-working-on-something-that-really-makes-a-difference",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4272-managing-alerts-and-notifications-in-employee-central",
+            "success factors"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4271-s4hana-in-5-minutes-or-less-interaction-between-co-and-fi",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4269-configuring-sap-solution-manager-72-to-support-sap-hana-db-instances",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4270-how-to-determine-sap-hana-partitioning-algorithm",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4267-commodity-code-conundrum",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4265-transition-to-sap-s4hana-on-azure-and-accelerate-your-manufacturing-succes",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4266-sneak-peek-into-s4hana-1909-finance-innovations-part-2",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4264-sap-fiori-for-sap-s4hana-overview-of-tools-for-maintaining-custom-launchpad-content-and-layout",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4263-how-to-find-all-the-important-transaction-code-related-to-sap-financial-supply-chain-management-by-using-area-menu-fscm",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4262-adding-hana-system-to-solution-manager-72-step-by-step-guide",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4268-being-a-programmer-part-1",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4261-connect-ms-excel-to-sap-hana-databaseanalysis-in-excel-with-hana-data",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4259-out-now-sap-fiori-design-guidelines-versions-178-and-180",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4260-turn-learning-into-achieving-how-covid-has-reshaped-it-learning",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4258-how-to-find-the-different-standard-table-related-to-sap-workflow-very-important-for-sap-workflow-reporting",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4257-advanced-available-to-promiseaatp-s4hana-1809-advanced-features",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4256-setting-up-hana-express-using-docker-on-windows-subsystem-for-linux-2",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4255-installation-of-sap-hanadatabase-with-extended-application-service-advanced-model-xsa-in-yandexcloud",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4254-easy-way-to-create-custom-country-specific-replication-classes-in-the-ptp-framework",
+            "success factors"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4253-sap-fiori-and-ui5-the-difference-in-100-seconds",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/sap-podcasts/sap-basis-podcasts/item/4252-sap-security-patch-day-dsag-jahreskongress-live-berechtigungen-prfen-rz10-live-vom-09092020",
+            "SAP Basis Podcast"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4251-material-staging-of-release-order-parts-using-two-ewm-managed-storage-locations-r1-s4-hana-1909",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4250-how-you-can-see-which-activity-is-taking-more-time-in-sap-using-stats",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4233-enriching-abap-consumer-proxy-with-binding-information",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4249-new-sap-business-scenario-recommendations-on-spotlight-get-your-free-recommendations-for-sap-s4hana-today",
+            "S/4 HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4248-alv-grid-with-multiple-header-lines",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4239-programmers-day-mission-2020",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4240-5-resources-for-getting-started-with-more-efficient-sap-fiori-app-development",
+            "SAP UI5"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4238-new-sap-training-class-extensibility-for-sap-s4hana",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4241-start-your-free-trial-for-sap-cloud-platform-launchpad",
+            "SAP UI5"
+        ]
+    ]
 }
