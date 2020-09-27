@@ -23,6 +23,10 @@
     "job_new": [],
     "blog_urls": [
         [
+            "https://sapbazar.com/articles/item/4405-sap-hana-update-upgrade-and-migration-sap-hana-20-an-introduction",
+            "SAP HANA"
+        ],
+        [
             "https://sapbazar.com/articles/item/4404-extending-successfactors-using-intelligent-services-and-sap-cloud-platform-contd",
             "SAP success factors"
         ],
@@ -145,10 +149,6 @@
         [
             "https://sapbazar.com/sap-podcasts/sap-basis-podcasts/item/4374-sap-reagiert-auf-blm-batch-input-hintertr-live-webinar-solution-manager-rz10-update-vom-23092020",
             "SAP Basis Podcast"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4360-abap-loop-at-group-by-statement-a-tutorial-for-2020",
-            "SAP ABAP"
         ]
     ],
     "blog_new": []

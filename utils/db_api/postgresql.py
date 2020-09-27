@@ -212,6 +212,27 @@ class Database:
         """
         return await self.pool.execute(sql)
 
+    async def remove_location(self, location):
+        sql = f"""
+        DELETE FROM Locations
+        WHERE location_name = '{location}'
+        """
+        return await self.pool.execute(sql)
+
+    async def total_users(self):
+        sql = f"""
+        SELECT COUNT(user_id) FROM Users
+        """
+        return await self.pool.fetch(sql)
+
+    async def subscribed_users(self):
+        sql = f"""
+        SELECT COUNT(user_id)
+        FROM Users
+        WHERE job_subscription = True
+        """
+        return await self.pool.fetch(sql)
+
 # async def create_tables():
 #     loop = asyncio.get_event_loop()
 #     db = Database(loop=loop)
@@ -222,8 +243,8 @@ class Database:
 #     loop.run_until_complete(db.create_table_job_posting_orders())
 
 #
-# loop = asyncio.get_event_loop()
-# db = Database(loop)
+loop = asyncio.get_event_loop()
+db = Database(loop)
 # print(loop.run_until_complete(db.get_category_id('SAP SD'))[0])
 # for i in loop.run_until_complete(db.get_blog_subscription_users('SAP ABAP')):
 #     print(i['user_id'], i['category'])
@@ -232,4 +253,3 @@ class Database:
 # loop.run_until_complete(db.add_user(1122,'John', blog_subscription=True))
 # loop.run_until_complete(db.add_user(1123,'Wim', blog_subscription=True))
 # loop.run_until_complete(db.add_user(1124,'Bode', blog_subscription=True))
-# loop.run_until_complete(db.add_category('SAP FI'))

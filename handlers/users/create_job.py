@@ -1,12 +1,11 @@
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message, ContentTypes
-
-from filters.admin_filter import IsCategory
 from loader import dp, bot
 from aiogram import types
 from middlewares.middleware import CreateJob
-from keyboards.inline.keyboard import job_post_callback, job_categories, job_locations, LOCATIONS, \
+from keyboards.inline.keyboard import job_post_callback, job_categories, job_locations, \
     confirmation_keys, invoice_callback, start_keys
+from filters.filters import IsCategory, IsLocation
 
 PAYMENTS_PROVIDER_TOKEN = '410694247:TEST:64a220f8-844a-438c-b4c6-51a07cc3fe84'
 
@@ -115,11 +114,11 @@ async def process_job_category(call: CallbackQuery, state: FSMContext):
     await bot.send_message(chat_id=chat_id, text='Choose job location', reply_markup=job_locations())
 
 
-@dp.callback_query_handler(job_post_callback.filter(posting=LOCATIONS), state=CreateJob.job_location)
+@dp.callback_query_handler(IsLocation(), state=CreateJob.job_location)
 async def process_job_location(call: CallbackQuery, state: FSMContext):
     await call.answer(cache_time=60)
     chat_id = call.message.chat.id
-    job_location = job_post_callback.parse(call.data)['posting']
+    job_location = call.data
     async with state.proxy() as data:
         data["job_location"] = job_location
     await call.message.edit_reply_markup()

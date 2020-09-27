@@ -2,13 +2,14 @@ import asyncio
 import logging
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, ReplyKeyboardRemove
-from keyboards.inline.keyboard import cat_subscriptions, LOCATIONS, start_subscription, category_keys, \
-    category_callback, localization_keys, location_callback, unsubscribe_key, blog_sub
+from filters.filters import SubscriptionCategories, SubscriptionLocations
+from keyboards.inline.keyboard import start_subscription, subscription_category_keys, \
+    localization_keys, unsubscribe_key, blog_sub, unsubscribe_blog_keys
 from middlewares.middleware import Form
-from utils.parsers import parsers
 from keyboards.inline.keyboard import start_keys
 from loader import dp, db, bot, json_db
 from utils.parsers import parsers
+from utils.misc import rate_limit
 
 @dp.callback_query_handler(start_subscription.filter(action='subscribe'))
 async def process_subscription(call: CallbackQuery):
@@ -17,15 +18,15 @@ async def process_subscription(call: CallbackQuery):
     """
     await call.answer(cache_time=60)
     user_id = int(call.from_user.id)
-    name = str(call.from_user.first_name) + str(call.from_user.last_name)
+    name = f"{call.from_user.first_name} {call.from_user.last_name}"
     await db.add_user(user_id, name)
     logging.info(f'USER ID: {user_id} CHOOSING CATEGORIES')
     await call.message.answer('Please choose your SAP categories',
-                              reply_markup=category_keys())
+                              reply_markup=await subscription_category_keys())
     await call.message.edit_reply_markup()
 
 
-@dp.callback_query_handler(category_callback.filter(category=cat_subscriptions()))
+@dp.callback_query_handler(SubscriptionCategories())
 async def choose_category(call: CallbackQuery):
     """
 
@@ -34,30 +35,30 @@ async def choose_category(call: CallbackQuery):
     await call.answer(cache_time=60)
     user_id = int(call.from_user.id)
     user_categories = await db.get_value('subscriptions', column='category', where_col='user_id', value=user_id)
-    if call.data == 'choose_category:Next' and user_categories:
+    if call.data == 'next' and user_categories:
         logging.info(f'CHAT ID: {user_id} CHOOSING LOCATION')
         await Form.state.set()
         await call.message.edit_reply_markup()
-        await call.message.answer('Please, choose your location', reply_markup=localization_keys())
-    elif call.data == 'choose_category:Next' and not user_categories:
+        await call.message.answer('Please, choose your location', reply_markup=await localization_keys())
+    elif call.data == 'next' and not user_categories:
         logging.info(f'EMPTY CATEGORY\tCHAT ID: {call.from_user.id}')
         await call.message.edit_reply_markup()
         await call.message.answer(f'You have not chosen any category yet. First, choose a category '
                                   f'and then press Next button',
-                                  reply_markup=category_keys())
+                                  reply_markup=await subscription_category_keys())
     else:
         callback_data = (call.message.text, call.message.chat.id)
         logging.info(f'CATEGORY UPDATE: {callback_data[1]}')
         user_id = int(call.from_user.id)
-        category = category_callback.parse(call.data)['category']
+        category = call.data
         await db.add_user_category(user_id=user_id, category=category)
         logging.info(f'CATEGORY UPDATED: {category} FOR USER ID: {user_id}')
         await call.message.edit_reply_markup()
         await call.message.answer(f'{category} category has been added. Choose another category or press Next',
-                                  reply_markup=category_keys())
+                                  reply_markup=await subscription_category_keys())
 
 
-@dp.callback_query_handler(location_callback.filter(location=LOCATIONS), state=Form.state)
+@dp.callback_query_handler(SubscriptionLocations(), state=Form.state)
 async def set_location(call: CallbackQuery, state: FSMContext):
     """
     Callback query catches name of location. Locations are stored in keyboard.py LOCATIONS variable.
@@ -66,7 +67,7 @@ async def set_location(call: CallbackQuery, state: FSMContext):
     callback_data = (call.message.text, call.message.chat.id)
     logging.info(f'call = {callback_data[0]}\tchat id: {callback_data[1]}')
     user_id = int(call.from_user.id)
-    location = location_callback.parse(call.data)['location']
+    location = call.data
     await db.update_user(user_id=user_id, location=location)
     logging.info(f'LOCATION UPDATED: {location} FOR USER ID: {user_id}')
     await state.finish()
@@ -89,16 +90,28 @@ async def subscribe_on_blog(call: CallbackQuery):
     await call.message.answer(f'You have successfully subscribed for job alert!',
                               reply_markup=unsubscribe_key())
 
+@rate_limit(5)
 @dp.callback_query_handler(text='unsubscribe')
 async def unsubscribe(call: CallbackQuery):
     """
     Unsubscribe button function
     """
+    await call.answer(cache_time=60)
     user_id = call.from_user.id
     await db.delete_user_subscription(user_id)
     await db.update_user(user_id, job_subscription='False')
     logging.info(f'USER ID: {user_id} UNSUSCRIBED')
+    await call.message.edit_reply_markup()
     await call.message.answer("You have successfully unsubscribed from job alert", reply_markup=ReplyKeyboardRemove())
+    await call.message.answer("Thank you for choosing our service", reply_markup=start_keys(user_id))
+
+@dp.callback_query_handler(text='blog_unsubscribe')
+async def unsubscribe_blog(call: CallbackQuery):
+    await call.answer(cache_time=60)
+    user_id = call.from_user.id
+    await db.update_user(user_id, blog_subscription='False')
+    logging.info(f'USER ID: {user_id} UNSUSCRIBED FROM BLOG')
+    await call.message.edit_reply_markup()
     await call.message.answer("Thank you for choosing our service", reply_markup=start_keys(user_id))
 
 async def scheduled_task(wait_time):
@@ -146,7 +159,7 @@ async def blog_task(wait_time):
                     logging.info(f"SENDING URL TO: {subscriber}")
                     await bot.send_message(subscriber['user_id'], text=f'<a href="{post_url}"> Hey! We got'
                                                                        f' a new post here! Check this out.</a>',
-                                           parse_mode='HTML')
+                                           parse_mode='HTML', reply_markup=unsubscribe_blog_keys())
         json_manager.update_blog_urls()
 
 
