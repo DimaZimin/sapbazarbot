@@ -5,10 +5,14 @@ class Form(StatesGroup):
 
 class CreateJob(StatesGroup):
     job_name = State()
-    company_name = ()
+    company_name = State()
     job_description = State()
     job_category = State()
     job_category_add = State()
     job_location = State()
     job_location_add = State()
     send_invoice = State()
+
+class Admin(StatesGroup):
+    new_category = State()
+    new_location =State()

@@ -4,7 +4,7 @@ import json
 from bs4 import BeautifulSoup
 import requests
 from loader import json_db
-
+import os
 
 class XMLParser:
     """
@@ -29,45 +29,43 @@ class XMLParser:
         return [self.extract_id(url) for url in self.get_urls()]
 
 
-class JSONContextManager:
+class JsonManager:
     """JSON Context Manager operates on json file"""
 
     def __init__(self, file):
         self.file = file
+        self.blog_parser = BlogParser()
+        self.xml_parser = XMLParser()
 
     def write_json(self, data):
         with open(self.file, 'w') as json_file:
             json.dump(data, json_file, indent=4)
 
-    def get_new_ads(self):
-        xml = XMLParser()
-        return [url for url in xml.get_urls() if url not in self.get_values('job_urls')]
+    def new_ads(self):
+        return [url for url in self.xml_parser.get_urls() if url not in self.get_values('job_urls')]
 
     def get_values(self, key: str):
         with open(self.file, 'r') as json_file:
             data = json.load(json_file)
             return data[key]
 
-    def update_json(self):
-        xml_parser = XMLParser()
+    def update_job_urls(self):
         with open(self.file, 'r') as json_file:
             data = json.load(json_file)
-            data['job_new'] = self.get_new_ads()
-            data['job_urls'] = xml_parser.get_urls()
+            data['job_new'] = self.new_ads()
+            data['job_urls'] = self.xml_parser.get_urls()
             self.write_json(data)
 
     def new_blog_post(self):
-        parser = BlogParser("https://sapbazar.com/sap-blogs/")
-        return [[link, category] for link, category in zip(parser.get_urls(), parser.get_categories())
-                if [link, category] not in self.get_values('blog_urls')]
+        return [post for post in self.blog_parser.blog_posts() if post not in self.get_values('blog_urls')]
 
     def update_blog_urls(self):
-        parser = BlogParser("https://sapbazar.com/sap-blogs/")
         with open(self.file, 'r') as json_file:
             data = json.load(json_file)
             data['blog_new'] = self.new_blog_post()
-            data['blog_urls'] = [(link, category) for link, category in zip(parser.get_urls(), parser.get_categories())]
+            data['blog_urls'] = self.blog_parser.blog_posts()
             self.write_json(data)
+
 
 class HTMLParser:
 
@@ -89,8 +87,8 @@ class HTMLParser:
 
 
 class BlogParser(HTMLParser):
-    def __init__(self, url):
-        super().__init__(url)
+    def __init__(self):
+        super().__init__('https://sapbazar.com/sap-blogs/')
         self.blog_category = self.soup.find_all(class_="allmode-category", )
         self.blog_post_links = self.soup.find_all(class_="allmode-title")
 
@@ -99,13 +97,17 @@ class BlogParser(HTMLParser):
                 for link in self.blog_post_links]
 
     def get_categories(self):
-        return [BeautifulSoup(str(string), 'html.parser').text for string in self.blog_category]
+        return [self.check_str(BeautifulSoup(str(string), 'html.parser').text) for string in self.blog_category]
+
+    def blog_posts(self):
+        return [[link, category] for link, category in zip(self.get_urls(), self.get_categories())]
 
     @staticmethod
     def check_str(string):
         if string.startswith('SAP'):
             return string
+        elif string == 'S/4 HANA':
+            return 'SAP S/4HANA'
         else:
             return 'SAP ' + string
-
 

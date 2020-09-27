@@ -4,20 +4,29 @@ This file contains keyboard and callback settings
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 from data.config import admins
+from loader import loop, db
 
 category_callback = CallbackData('choose_category', 'category')
 start_subscription = CallbackData('subscription', 'action')
 job_post_callback = CallbackData('job_posting', 'posting')
 invoice_callback = CallbackData('send_invoice', 'confirm')
 location_callback = CallbackData('choose_location', 'location')
+remove_category_callback = CallbackData('remove_category', 'category')
 
-# You can add new category here
-CATEGORIES = ['SAP ABAP', 'SAP FI', 'SAP BASIS', 'SAP TM',
-              'SAP BW', 'SAP SD', 'SAP BPC', 'SAP HCM',
-              'SAP QM', 'SAP EWM', 'SAP S/4HANA', 'SAP CO', 'SAP GRC', 'Next']
+# CATEGORIES = ['SAP ABAP', 'SAP FI', 'SAP BASIS', 'SAP TM',
+#               'SAP BW', 'SAP SD', 'SAP BPC', 'SAP HCM',
+#               'SAP QM', 'SAP EWM', 'SAP S/4HANA', 'SAP CO', 'SAP GRC', 'Next']
 
-# Locations can be added here
-LOCATIONS = ['Moscow', 'Saint Petersburg', 'Russia', 'Germany', 'Berlin', 'Wroclaw', 'Remote']
+#
+# categories = [category for category in dict(loop.run_until_complete(db.fetch_all('Categories'))).values()]
+
+# def categories():
+#     return [category for category in dict(loop.run_until_complete(db.fetch_all('Categories'))).values()]
+
+def cat_subscriptions():
+    return [category for category in dict(loop.run_until_complete(db.fetch_all('Categories'))).values()] + ['Next']
+
+LOCATIONS = [location for location in dict(loop.run_until_complete(db.fetch_all('Locations'))).values()]
 
 
 def start_keys(admin_id):
@@ -33,9 +42,6 @@ def start_keys(admin_id):
     return markup
 
 
-
-
-
 def category_keys() -> InlineKeyboardMarkup:
     """
     Inline keyboard that includes all available categories. This keyboard pops up after pressing "Subscribe" button.
@@ -45,16 +51,17 @@ def category_keys() -> InlineKeyboardMarkup:
     !!!IMPORTANT!!! DO NOT REMOVE 'Next' at the end of the list. Keep it there for convenience!!!
     """
     markup = InlineKeyboardMarkup(row_width=2)
-    for category in CATEGORIES:
+    for category in cat_subscriptions():
         button = InlineKeyboardButton(category, callback_data=category_callback.new(category=category))
         markup.insert(button)
     return markup
 
 
-def job_categories() -> InlineKeyboardMarkup:
+async def job_categories() -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup(row_width=2)
-    for category in CATEGORIES[:-1]:
-        button = InlineKeyboardButton(category, callback_data=job_post_callback.new(posting=category))
+    categories = await db.fetch_all('Categories')
+    for category in categories:
+        button = InlineKeyboardButton(category['category_name'], callback_data=job_post_callback.new(posting=category))
         markup.insert(button)
     markup.insert(InlineKeyboardButton('Add new category',
                                        callback_data='add_cat'))
@@ -101,3 +108,26 @@ def blog_sub():
 
 def unsubscribe_key():
     return InlineKeyboardMarkup().insert(InlineKeyboardButton(text='Unsubscribe', callback_data='unsubscribe'))
+
+
+def admin_start_keys() -> InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup(row_width=1)
+    markup.insert(InlineKeyboardButton(text="New category", callback_data='admin_new_category'))
+    markup.insert(InlineKeyboardButton(text="Remove category", callback_data='admin_remove_category'))
+    markup.insert(InlineKeyboardButton(text="New location", callback_data='admin_new_location'))
+    markup.insert(InlineKeyboardButton(text="Remove location", callback_data='admin_remove_location'))
+    markup.insert(InlineKeyboardButton(text="Statistics", callback_data='admin_statistics'))
+    markup.insert(InlineKeyboardButton(text="Back to main", callback_data='admin_main'))
+    return markup
+
+
+async def admin_remove_categories() -> InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup(row_width=2)
+    categories = await db.fetch_all('Categories')
+    for category in categories:
+        markup.insert(InlineKeyboardButton(text=category['category_name'],
+                                           callback_data=category['category_name']))
+    markup.insert(InlineKeyboardButton(text='Back', callback_data='admin_go_back'))
+    return markup
+
+
