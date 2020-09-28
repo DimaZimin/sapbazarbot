@@ -1,11 +1,11 @@
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message, ContentTypes
-from loader import dp, bot
+from loader import dp, bot, db
 from aiogram import types
 from middlewares.middleware import CreateJob
-from keyboards.inline.keyboard import job_post_callback, job_categories, job_locations, \
+from keyboards.inline.keyboard import job_post_callback, job_categories_keys, job_locations_keys, \
     confirmation_keys, invoice_callback, start_keys
-from filters.filters import IsCategory, IsLocation
+from filters.filters import JobCategory, JobLocation
 
 PAYMENTS_PROVIDER_TOKEN = '410694247:TEST:64a220f8-844a-438c-b4c6-51a07cc3fe84'
 
@@ -50,7 +50,7 @@ async def process_job_description(message: Message, state: FSMContext):
     async with state.proxy() as data:
         data["job_description"] = job_description
     await CreateJob.job_category.set()
-    await bot.send_message(chat_id=chat_id, text='Choose job category', reply_markup=job_categories())
+    await bot.send_message(chat_id=chat_id, text='Choose job category', reply_markup=await job_categories_keys())
 
 
 @dp.callback_query_handler(text='add_cat', state=CreateJob.job_category)
@@ -99,26 +99,26 @@ async def render_category(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data["job_category"] = job_category
     await CreateJob.job_location.set()
-    await bot.send_message(chat_id=chat_id, text='Choose job location', reply_markup=job_locations())
+    await bot.send_message(chat_id=chat_id, text='Choose job location', reply_markup=await job_locations_keys())
 
 
-@dp.callback_query_handler(IsCategory(), state=CreateJob.job_category)
+@dp.callback_query_handler(JobCategory(), state=CreateJob.job_category)
 async def process_job_category(call: CallbackQuery, state: FSMContext):
     await call.answer(cache_time=60)
     chat_id = call.message.chat.id
-    job_category = job_post_callback.parse(call.data)['posting']
+    job_category = call.data[2:]
     async with state.proxy() as data:
         data["job_category"] = job_category
     await CreateJob.job_location.set()
     await call.message.edit_reply_markup()
-    await bot.send_message(chat_id=chat_id, text='Choose job location', reply_markup=job_locations())
+    await bot.send_message(chat_id=chat_id, text='Choose job location', reply_markup=await job_locations_keys())
 
 
-@dp.callback_query_handler(IsLocation(), state=CreateJob.job_location)
+@dp.callback_query_handler(JobLocation(), state=CreateJob.job_location)
 async def process_job_location(call: CallbackQuery, state: FSMContext):
     await call.answer(cache_time=60)
     chat_id = call.message.chat.id
-    job_location = call.data
+    job_location = call.data[2:]
     async with state.proxy() as data:
         data["job_location"] = job_location
     await call.message.edit_reply_markup()
@@ -143,21 +143,28 @@ async def send_invoice(call: CallbackQuery, state: FSMContext):
     chat_id = call.message.chat.id
     data = await state.get_data()
     await state.finish()
-    await bot.send_invoice(chat_id,
-                           title='Job posting',
-                           description=f"Name: {data['job_name']}\n\n"
-                                       f"Description: {data['job_description']}\n\n"
-                                       f"Category: {data['job_category']}\n\n"
-                                       f"Location: {data['job_location']}",
-                           provider_token=PAYMENTS_PROVIDER_TOKEN,
-                           currency='rub',
-                           prices=prices,
-                           start_parameter="create_job_invoice",
-                           need_name=True,
-                           need_email=True,
-                           need_shipping_address=False,
-                           is_flexible=False,
-                           payload='HAPPY FRIDAYS COUPON')
+    await call.message.edit_reply_markup()
+    db_status = await db.fetch_value('payable', 'settings')
+    if db_status[0]['payable']:
+        await bot.send_invoice(chat_id,
+                               title='Job posting',
+                               description=f"Name: {data['job_name']}\n\n"
+                                           f"Description: {data['job_description']}\n\n"
+                                           f"Category: {data['job_category']}\n\n"
+                                           f"Location: {data['job_location']}",
+                               provider_token=PAYMENTS_PROVIDER_TOKEN,
+                               currency='rub',
+                               prices=prices,
+                               start_parameter="create_job_invoice",
+                               need_name=True,
+                               need_email=True,
+                               need_shipping_address=False,
+                               is_flexible=False,
+                               payload='HAPPY FRIDAYS COUPON'
+                               )
+    else:
+        await bot.send_message(chat_id=chat_id, text='Success! Your job posting has been created!',
+                               reply_markup=start_keys(chat_id))
 
 
 @dp.callback_query_handler(invoice_callback.filter(confirm='no'), state=CreateJob.send_invoice)
@@ -187,3 +194,4 @@ async def got_payment(message: types.Message):
                                message.successful_payment.total_amount / 100, message.successful_payment.currency),
 
                            parse_mode='Markdown', reply_markup=start_keys(chat_id))
+

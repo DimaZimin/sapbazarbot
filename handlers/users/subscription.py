@@ -1,10 +1,11 @@
 import asyncio
 import logging
 from aiogram.dispatcher import FSMContext
-from aiogram.types import CallbackQuery, ReplyKeyboardRemove
+from aiogram.dispatcher.filters import Command
+from aiogram.types import CallbackQuery, ReplyKeyboardRemove, Message
 from filters.filters import SubscriptionCategories, SubscriptionLocations
 from keyboards.inline.keyboard import start_subscription, subscription_category_keys, \
-    localization_keys, unsubscribe_key, blog_sub, unsubscribe_blog_keys
+    localization_keys, unsubscribe_key, blog_sub
 from middlewares.middleware import Form
 from keyboards.inline.keyboard import start_keys
 from loader import dp, db, bot, json_db
@@ -105,14 +106,12 @@ async def unsubscribe(call: CallbackQuery):
     await call.message.answer("You have successfully unsubscribed from job alert", reply_markup=ReplyKeyboardRemove())
     await call.message.answer("Thank you for choosing our service", reply_markup=start_keys(user_id))
 
-@dp.callback_query_handler(text='blog_unsubscribe')
-async def unsubscribe_blog(call: CallbackQuery):
-    await call.answer(cache_time=60)
-    user_id = call.from_user.id
-    await db.update_user(user_id, blog_subscription='False')
-    logging.info(f'USER ID: {user_id} UNSUSCRIBED FROM BLOG')
-    await call.message.edit_reply_markup()
-    await call.message.answer("Thank you for choosing our service", reply_markup=start_keys(user_id))
+@dp.message_handler(Command(['unsubscribe']))
+async def unsubscribe_blog(message: Message):
+    user_id = message.chat.id
+    await db.update_user(user_id=user_id, blog_subscription='False')
+    await bot.send_message(user_id, text='You have been unsubscribed from blog.')
+
 
 async def scheduled_task(wait_time):
     """
@@ -141,6 +140,7 @@ async def scheduled_task(wait_time):
                                                                  parse_mode='HTML')
         json_manager.update_job_urls()
 
+
 async def blog_task(wait_time):
     while True:
         await asyncio.sleep(wait_time)
@@ -159,7 +159,7 @@ async def blog_task(wait_time):
                     logging.info(f"SENDING URL TO: {subscriber}")
                     await bot.send_message(subscriber['user_id'], text=f'<a href="{post_url}"> Hey! We got'
                                                                        f' a new post here! Check this out.</a>',
-                                           parse_mode='HTML', reply_markup=unsubscribe_blog_keys())
+                                           parse_mode='HTML')
         json_manager.update_blog_urls()
 
 

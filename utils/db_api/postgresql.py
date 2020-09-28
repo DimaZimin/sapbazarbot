@@ -74,6 +74,22 @@ class Database:
         """
         await self.pool.execute(sql)
 
+    async def create_table_settings(self):
+        sql = """
+        CREATE TABLE IF NOT EXISTS settings (
+        payable BOOLEAN NOT NULL,
+        posting_fees INT NOT NULL
+        );
+        """
+        await self.pool.execute(sql)
+
+    async def payable_post(self, payable='True'):
+        sql = f"""
+        UPDATE settings 
+        SET payable = {payable}
+        """
+        await self.pool.execute(sql)
+
     async def drop_all(self):
         sql = """
         DO $$ DECLARE
@@ -243,13 +259,5 @@ class Database:
 #     loop.run_until_complete(db.create_table_job_posting_orders())
 
 #
-loop = asyncio.get_event_loop()
-db = Database(loop)
-# print(loop.run_until_complete(db.get_category_id('SAP SD'))[0])
-# for i in loop.run_until_complete(db.get_blog_subscription_users('SAP ABAP')):
-#     print(i['user_id'], i['category'])
-# loop.run_until_complete(db.get_value('subscriptions', column='category', where_col='user_id', value='111'))
-
-# loop.run_until_complete(db.add_user(1122,'John', blog_subscription=True))
-# loop.run_until_complete(db.add_user(1123,'Wim', blog_subscription=True))
-# loop.run_until_complete(db.add_user(1124,'Bode', blog_subscription=True))
+# loop = asyncio.get_event_loop()
+# db = Database(loop)

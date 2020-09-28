@@ -4,7 +4,7 @@ from aiogram.dispatcher import FSMContext
 import logging
 from keyboards.inline.keyboard import admin_start_keys, remove_categories_keys, remove_location_keys, start_keys
 from loader import dp, bot, db
-from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
+from aiogram.types import CallbackQuery, Message
 from middlewares.middleware import Admin
 from filters.filters import IsCategory, IsLocation
 
@@ -120,12 +120,15 @@ async def admin_stats(call: CallbackQuery):
     locations = "\n".join(locations_list)
     categories_list = [category['category_name'] for category in await db.fetch_value('category_name', 'Categories')]
     categories = "\n".join(categories_list)
+    db_status = await db.fetch_value('payable', 'settings')
+    status = 'Payable' if db_status[0]['payable'] else 'Free of charge'
     await call.message.edit_reply_markup()
     await bot.send_message(chat_id=user_id,
                            text=f"<b>Total users:</b> {total_users[0]['count']}\n\n"
                                 f"<b>Subscribed users:</b> {subscribed_users[0]['count']}\n\n"
                                 f"<b>Locations:</b>\n{locations}\n\n"
-                                f"<b>Categories:</b>\n{categories}\n\n",
+                                f"<b>Categories:</b>\n{categories}\n\n"
+                                f"<b>Job posting:</b>\n{status}\n\n",
                            reply_markup=None, parse_mode='HTML')
     await asyncio.sleep(3)
     await bot.send_message(chat_id=user_id, text='Admin panel', reply_markup=admin_start_keys())
@@ -137,3 +140,18 @@ async def admin_stats(call: CallbackQuery):
     await call.message.edit_reply_markup()
     await bot.send_message(chat_id=user_id,
                            text='Main panel', reply_markup=start_keys(user_id))
+
+@dp.callback_query_handler(text='payable')
+async def make_payable(call: CallbackQuery):
+    user_id = call.message.chat.id
+    await call.answer(cache_time=20)
+    db_status = await db.fetch_value('payable', 'settings')
+    await bot.send_chat_action(user_id, action='typing')
+    if db_status[0]['payable']:
+        await db.payable_post('False')
+        status = 'free of charge'
+    else:
+        await db.payable_post('True')
+        status = 'payable'
+    await call.message.edit_reply_markup()
+    await bot.send_message(chat_id=user_id, text=f'Your job posting set to {status}', reply_markup=start_keys(user_id))

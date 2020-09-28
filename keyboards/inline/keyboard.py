@@ -49,22 +49,22 @@ async def subscription_category_keys() -> InlineKeyboardMarkup:
     return markup
 
 
-async def job_categories() -> InlineKeyboardMarkup:
+async def job_categories_keys() -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup(row_width=2)
     categories = [category['category_name'] for category in await db.fetch_value('category_name', 'Categories')]
     for category in categories:
-        button = InlineKeyboardButton(category, callback_data=job_post_callback.new(posting=category))
+        button = InlineKeyboardButton(category, callback_data=f"JP{category}")
         markup.insert(button)
     markup.insert(InlineKeyboardButton('Add new category',
                                        callback_data='add_cat'))
     return markup
 
 
-async def job_locations() -> InlineKeyboardMarkup:
+async def job_locations_keys() -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup(row_width=2)
     locations = [location['location_name'] for location in await db.fetch_value('location_name', 'Locations')]
     for location in locations:
-        button = InlineKeyboardButton(location, callback_data=location)
+        button = InlineKeyboardButton(location, callback_data=f"JP{location}")
         markup.insert(button)
     markup.insert(InlineKeyboardButton('Add new location',
                                        callback_data='add_loc'))
@@ -111,6 +111,7 @@ def admin_start_keys() -> InlineKeyboardMarkup:
     markup.insert(InlineKeyboardButton(text="New location", callback_data='admin_new_location'))
     markup.insert(InlineKeyboardButton(text="Remove location", callback_data='admin_remove_location'))
     markup.insert(InlineKeyboardButton(text="Statistics", callback_data='admin_statistics'))
+    markup.insert(InlineKeyboardButton(text="Payable posting", callback_data='payable'))
     markup.insert(InlineKeyboardButton(text="Back to main", callback_data='admin_main'))
     return markup
 
@@ -134,7 +135,3 @@ async def remove_location_keys() -> InlineKeyboardMarkup:
     markup.insert(InlineKeyboardButton(text='Back', callback_data='admin_go_back'))
     return markup
 
-def unsubscribe_blog_keys() -> InlineKeyboardMarkup:
-    markup = InlineKeyboardMarkup()
-    markup.insert(InlineKeyboardButton(text='Unsubscribe', callback_data='blog_unsubscribe'))
-    return markup
