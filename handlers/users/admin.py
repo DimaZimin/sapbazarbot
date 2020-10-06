@@ -5,7 +5,7 @@ import logging
 from keyboards.inline.keyboard import admin_start_keys, remove_categories_keys, remove_location_keys, start_keys
 from loader import dp, bot, db
 from aiogram.types import CallbackQuery, Message
-from middlewares.middleware import Admin
+from middlewares.middleware import Admin, MassMessage, GroupMessage
 from filters.filters import IsCategory, IsLocation
 
 
@@ -26,6 +26,7 @@ async def admin_add_category(call: CallbackQuery):
     await bot.send_message(chat_id=chat_id,
                            text='Type category name')
 
+
 @dp.message_handler(state=Admin.new_category)
 async def render_category(message: Message, state: FSMContext):
     user_id = message.chat.id
@@ -35,6 +36,7 @@ async def render_category(message: Message, state: FSMContext):
     await bot.send_message(chat_id=user_id,
                            text=f'{category} category has been added!',
                            reply_markup=admin_start_keys())
+
 
 @dp.callback_query_handler(text='admin_remove_category')
 async def delete_category(call: CallbackQuery):
@@ -133,6 +135,7 @@ async def admin_stats(call: CallbackQuery):
     await asyncio.sleep(3)
     await bot.send_message(chat_id=user_id, text='Admin panel', reply_markup=admin_start_keys())
 
+
 @dp.callback_query_handler(text='admin_main')
 async def admin_stats(call: CallbackQuery):
     await call.answer(cache_time=60)
@@ -141,10 +144,11 @@ async def admin_stats(call: CallbackQuery):
     await bot.send_message(chat_id=user_id,
                            text='Main panel', reply_markup=start_keys(user_id))
 
+
 @dp.callback_query_handler(text='payable')
 async def make_payable(call: CallbackQuery):
+    await call.answer(cache_time=60)
     user_id = call.message.chat.id
-    await call.answer(cache_time=20)
     db_status = await db.fetch_value('payable', 'settings')
     await bot.send_chat_action(user_id, action='typing')
     if db_status[0]['payable']:
@@ -155,3 +159,68 @@ async def make_payable(call: CallbackQuery):
         status = 'payable'
     await call.message.edit_reply_markup()
     await bot.send_message(chat_id=user_id, text=f'Your job posting set to {status}', reply_markup=start_keys(user_id))
+
+
+@dp.callback_query_handler(text='mass_message')
+async def mass_message(call: CallbackQuery):
+    await call.answer(cache_time=60)
+    user_id = call.message.chat.id
+    await bot.send_chat_action(user_id, action='typing')
+    await MassMessage.message_processing.set()
+    await call.message.edit_reply_markup()
+    await bot.send_message(user_id, text='Type a message', reply_markup=None)
+
+
+@dp.message_handler(state=MassMessage)
+async def send_mass_message(message: Message, state: FSMContext):
+    user_id = message.chat.id
+    subscribers = [user['user_id'] for user in await db.fetch_value('user_id', 'users')]
+    for user in subscribers:
+        await bot.send_message(user, text=message.text)
+    await state.finish()
+    await bot.send_message(user_id, text='Main admin panel', reply_markup=admin_start_keys())
+
+
+@dp.callback_query_handler(text='group_message')
+async def group_message(call: CallbackQuery):
+    await call.answer(cache_time=60)
+    user_id = call.message.chat.id
+    await bot.send_chat_action(user_id, action='typing')
+    await GroupMessage.message_processing.set()
+    await call.message.edit_reply_markup()
+    await bot.send_message(user_id, text='Type a message', reply_markup=None)
+
+
+@dp.message_handler(state=GroupMessage)
+async def send_mass_message(message: Message, state: FSMContext):
+    user_id = message.chat.id
+    group_chat_id = '@sapbazar'
+    await state.finish()
+    await bot.send_message(group_chat_id, text=message.text)
+    await bot.send_message(user_id, text=f"Privet {message.from_user.first_name}", reply_markup=admin_start_keys())
+
+
+@dp.callback_query_handler(text='set_price')
+async def set_price(call: CallbackQuery):
+    await call.answer(cache_time=60)
+    user_id = call.message.chat.id
+    await Admin.catch_price.set()
+    await call.message.edit_reply_markup()
+    await bot.send_message(chat_id=user_id, text=f'Укажи стоимость услуг в копейках (мин 5000). '
+                                                 f'Используй только числа. Пример: '
+                                                 f'введи 50000 и стоимость услуги будет равна 500 рублей.')
+
+
+@dp.message_handler(lambda message: message.text.isdigit() and int(message.text) >= 5000, state=Admin.catch_price)
+async def update_price(message: Message, state: FSMContext):
+    user_id = message.from_user.id
+    await db.set_posting_fees(int(message.text))
+    await state.finish()
+    await bot.send_message(chat_id=user_id, text=f"Posting fees has been set to {int(message.text)/100} RUR",
+                           reply_markup=admin_start_keys())
+
+
+@dp.message_handler(lambda message: not message.text.isdigit() or int(message.text) < 5000, state=Admin.catch_price)
+async def process_price_invalid(message: Message):
+    logging.info(f"ADMIN USER: {message.from_user.id} - SETS INVALID FEES, MUST BE INTEGER")
+    await message.reply('Стоимость должна быть указана в цифрах и составлять больше 5000 !')

@@ -15,6 +15,6 @@ if __name__ == '__main__':
     from handlers import dp
     from handlers.users.subscription import blog_task
     from handlers.users.subscription import scheduled_task
-    dp.loop.create_task(scheduled_task(20))
-    dp.loop.create_task(blog_task(20))
+    dp.loop.create_task(scheduled_task(1200))
+    dp.loop.create_task(blog_task(600))
     executor.start_polling(dp, on_startup=on_startup)

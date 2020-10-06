@@ -1,7 +1,7 @@
 """
 This file contains keyboard and callback settings
 """
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.utils.callback_data import CallbackData
 from data.config import admins
 from loader import db
@@ -12,10 +12,6 @@ job_post_callback = CallbackData('job_posting', 'posting')
 invoice_callback = CallbackData('send_invoice', 'confirm')
 location_callback = CallbackData('choose_location', 'location')
 remove_category_callback = CallbackData('remove_category', 'category')
-
-# CATEGORIES = ['SAP ABAP', 'SAP FI', 'SAP BASIS', 'SAP TM',
-#               'SAP BW', 'SAP SD', 'SAP BPC', 'SAP HCM',
-#               'SAP QM', 'SAP EWM', 'SAP S/4HANA', 'SAP CO', 'SAP GRC', 'Next']
 
 
 def start_keys(admin_id):
@@ -55,8 +51,8 @@ async def job_categories_keys() -> InlineKeyboardMarkup:
     for category in categories:
         button = InlineKeyboardButton(category, callback_data=f"JP{category}")
         markup.insert(button)
-    markup.insert(InlineKeyboardButton('Add new category',
-                                       callback_data='add_cat'))
+    # markup.insert(InlineKeyboardButton('Add new category',
+    #                                    callback_data='add_cat'))
     return markup
 
 
@@ -66,8 +62,8 @@ async def job_locations_keys() -> InlineKeyboardMarkup:
     for location in locations:
         button = InlineKeyboardButton(location, callback_data=f"JP{location}")
         markup.insert(button)
-    markup.insert(InlineKeyboardButton('Add new location',
-                                       callback_data='add_loc'))
+    # markup.insert(InlineKeyboardButton('Add new location',
+    #                                    callback_data='add_loc'))
     return markup
 
 
@@ -101,7 +97,7 @@ def blog_sub():
 
 
 def unsubscribe_key():
-    return InlineKeyboardMarkup().insert(InlineKeyboardButton(text='Unsubscribe', callback_data='unsubscribe'))
+    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='❌Unsubscribe')]], resize_keyboard=True, row_width=1)
 
 
 def admin_start_keys() -> InlineKeyboardMarkup:
@@ -110,8 +106,11 @@ def admin_start_keys() -> InlineKeyboardMarkup:
     markup.insert(InlineKeyboardButton(text="Remove category", callback_data='admin_remove_category'))
     markup.insert(InlineKeyboardButton(text="New location", callback_data='admin_new_location'))
     markup.insert(InlineKeyboardButton(text="Remove location", callback_data='admin_remove_location'))
-    markup.insert(InlineKeyboardButton(text="Statistics", callback_data='admin_statistics'))
+    markup.insert(InlineKeyboardButton(text="Statistics and settings", callback_data='admin_statistics'))
     markup.insert(InlineKeyboardButton(text="Payable posting", callback_data='payable'))
+    markup.insert(InlineKeyboardButton(text="Send mass message", callback_data='mass_message'))
+    markup.insert(InlineKeyboardButton(text="Send channel message", callback_data='group_message'))
+    markup.insert(InlineKeyboardButton(text='Set posting price', callback_data='set_price'))
     markup.insert(InlineKeyboardButton(text="Back to main", callback_data='admin_main'))
     return markup
 

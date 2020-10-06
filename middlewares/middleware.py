@@ -1,7 +1,9 @@
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
+
 class Form(StatesGroup):
     state = State()
+
 
 class CreateJob(StatesGroup):
     job_name = State()
@@ -12,7 +14,24 @@ class CreateJob(StatesGroup):
     job_location = State()
     job_location_add = State()
     send_invoice = State()
+    checkout = State()
+    payment_paid = State()
+
 
 class Admin(StatesGroup):
+
     new_category = State()
-    new_location =State()
+    new_location = State()
+    catch_price = State()
+
+
+class MassMessage(StatesGroup):
+
+    message_processing = State()
+
+
+class GroupMessage(StatesGroup):
+
+    message_processing = State()
+
+

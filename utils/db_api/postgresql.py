@@ -4,6 +4,7 @@ import asyncio
 from data import config
 
 
+# noinspection SqlNoDataSourceInspection
 class Database:
 
     def __init__(self, loop: asyncio.AbstractEventLoop):
@@ -66,9 +67,9 @@ class Database:
         user_id	INT NOT NULL REFERENCES Users (user_id),
         company VARCHAR(255),
         job_name VARCHAR(255),	
-        job_description VARCHAR(255),	
-        job_category INT REFERENCES Categories (id), 
-        job_location INT REFERENCES Locations (id),
+        job_description VARCHAR(2555),	
+        job_category VARCHAR(255),
+        job_location VARCHAR(255),
         paid BOOLEAN NOT NULL
         );
         """
@@ -197,7 +198,7 @@ class Database:
             return await self.pool.execute(sql)
         except UniqueViolationError:
             pass
-        print(sql)
+
 
     async def delete_data(self, table):
         sql = f"""
@@ -249,15 +250,15 @@ class Database:
         """
         return await self.pool.fetch(sql)
 
-# async def create_tables():
-#     loop = asyncio.get_event_loop()
-#     db = Database(loop=loop)
-#     loop.run_until_complete(db.create_table_categories())
-#     loop.run_until_complete(db.create_table_users())
-#     loop.run_until_complete(db.create_table_locations())
-#     loop.run_until_complete(db.create_table_subscriptions())
-#     loop.run_until_complete(db.create_table_job_posting_orders())
+    async def submit_order(self, user_id, company, job_name, job_description, job_category, job_location, paid):
+        sql = """
+        INSERT INTO job_posting_orders (user_id, company, job_name, job_description, job_category, job_location, paid)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        """
+        return await self.pool.fetch(sql, user_id, company, job_name, job_description, job_category, job_location, paid)
 
-#
-# loop = asyncio.get_event_loop()
-# db = Database(loop)
+    async def set_posting_fees(self, fees: int):
+        sql = f"""
+        UPDATE settings SET posting_fees = {fees} 
+        """
+        return await self.pool.execute(sql)

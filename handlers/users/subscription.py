@@ -1,17 +1,21 @@
 import asyncio
 import logging
+
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Command
+from aiogram.dispatcher.filters import Command, Text
 from aiogram.types import CallbackQuery, ReplyKeyboardRemove, Message
 from filters.filters import SubscriptionCategories, SubscriptionLocations
 from keyboards.inline.keyboard import start_subscription, subscription_category_keys, \
     localization_keys, unsubscribe_key, blog_sub
+
 from middlewares.middleware import Form
 from keyboards.inline.keyboard import start_keys
 from loader import dp, db, bot, json_db
 from utils.parsers import parsers
 from utils.misc import rate_limit
 
+
+@rate_limit(5)
 @dp.callback_query_handler(start_subscription.filter(action='subscribe'))
 async def process_subscription(call: CallbackQuery):
     """
@@ -27,6 +31,7 @@ async def process_subscription(call: CallbackQuery):
     await call.message.edit_reply_markup()
 
 
+@rate_limit(5)
 @dp.callback_query_handler(SubscriptionCategories())
 async def choose_category(call: CallbackQuery):
     """
@@ -59,6 +64,7 @@ async def choose_category(call: CallbackQuery):
                                   reply_markup=await subscription_category_keys())
 
 
+@rate_limit(5)
 @dp.callback_query_handler(SubscriptionLocations(), state=Form.state)
 async def set_location(call: CallbackQuery, state: FSMContext):
     """
@@ -78,6 +84,7 @@ async def set_location(call: CallbackQuery, state: FSMContext):
                               reply_markup=blog_sub())
 
 
+@rate_limit(5)
 @dp.callback_query_handler(text=['yes', 'no'])
 async def subscribe_on_blog(call: CallbackQuery):
     await call.answer(cache_time=60)
@@ -91,21 +98,21 @@ async def subscribe_on_blog(call: CallbackQuery):
     await call.message.answer(f'You have successfully subscribed for job alert!',
                               reply_markup=unsubscribe_key())
 
+
 @rate_limit(5)
-@dp.callback_query_handler(text='unsubscribe')
-async def unsubscribe(call: CallbackQuery):
+@dp.message_handler(Text(contains='Unsubscribe'))
+async def unsubscribe(message: Message):
     """
     Unsubscribe button function
     """
-    await call.answer(cache_time=60)
-    user_id = call.from_user.id
+    user_id = message.from_user.id
     await db.delete_user_subscription(user_id)
     await db.update_user(user_id, job_subscription='False')
     logging.info(f'USER ID: {user_id} UNSUSCRIBED')
-    await call.message.edit_reply_markup()
-    await call.message.answer("You have successfully unsubscribed from job alert", reply_markup=ReplyKeyboardRemove())
-    await call.message.answer("Thank you for choosing our service", reply_markup=start_keys(user_id))
+    await message.answer("You have successfully unsubscribed from job alert", reply_markup=ReplyKeyboardRemove())
+    await message.answer("Thank you for choosing our service", reply_markup=start_keys(user_id))
 
+@rate_limit(5)
 @dp.message_handler(Command(['unsubscribe']))
 async def unsubscribe_blog(message: Message):
     user_id = message.chat.id
