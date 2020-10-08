@@ -1,9 +1,9 @@
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message, ContentTypes
+from aiogram import types
 
 from data.config import PAYMENTS_PROVIDER_TOKEN
 from loader import dp, bot, db, mysql_db
-from aiogram import types
 from middlewares.middleware import CreateJob
 from keyboards.inline.keyboard import job_post_callback, job_categories_keys, job_locations_keys, \
     confirmation_keys, invoice_callback, start_keys
@@ -39,6 +39,7 @@ async def process_company_name(message: Message, state: FSMContext):
     await CreateJob.job_name.set()
     await bot.send_message(user_id, 'Type a job name')
 
+
 @rate_limit(5)
 @dp.message_handler(state=CreateJob.job_name)
 async def process_job_name(message: Message, state: FSMContext):
@@ -49,6 +50,7 @@ async def process_job_name(message: Message, state: FSMContext):
         data["job_name"] = job_name
     await CreateJob.job_description.set()
     await message.answer('Type job description')
+
 
 @rate_limit(5)
 @dp.message_handler(state=CreateJob.job_description)
@@ -61,6 +63,7 @@ async def process_job_description(message: Message, state: FSMContext):
     await CreateJob.job_category.set()
     await bot.send_message(chat_id=user_id, text='Choose job category', reply_markup=await job_categories_keys())
 
+
 @rate_limit(5)
 @dp.callback_query_handler(text='add_cat', state=CreateJob.job_category)
 async def add_category(call: CallbackQuery):
@@ -71,6 +74,7 @@ async def add_category(call: CallbackQuery):
     await call.message.edit_reply_markup()
     await bot.send_message(chat_id=user_id, text='Type category name', reply_markup=None)
 
+
 @rate_limit(5)
 @dp.callback_query_handler(text='add_loc', state=CreateJob.job_location)
 async def add_location(call: CallbackQuery):
@@ -80,6 +84,7 @@ async def add_location(call: CallbackQuery):
     await bot.send_chat_action(user_id, action='typing')
     await call.message.edit_reply_markup()
     await bot.send_message(chat_id=user_id, text='What is your location? Type a city or country', reply_markup=None)
+
 
 @rate_limit(5)
 @dp.message_handler(state=CreateJob.job_location_add)
@@ -103,6 +108,7 @@ async def render_location(message: types.Message, state: FSMContext):
                                                  f"{data['job_location']}",
                            reply_markup=confirmation_keys(), parse_mode=types.ParseMode.HTML)
 
+
 @rate_limit(5)
 @dp.message_handler(state=CreateJob.job_category_add)
 async def render_category(message: types.Message, state: FSMContext):
@@ -113,6 +119,7 @@ async def render_category(message: types.Message, state: FSMContext):
         data["job_category"] = job_category
     await CreateJob.job_location.set()
     await bot.send_message(chat_id=user_id, text='Choose job location', reply_markup=await job_locations_keys())
+
 
 @rate_limit(5)
 @dp.callback_query_handler(JobCategory(), state=CreateJob.job_category)
@@ -126,6 +133,7 @@ async def process_job_category(call: CallbackQuery, state: FSMContext):
     await CreateJob.job_location.set()
     await call.message.edit_reply_markup()
     await bot.send_message(chat_id=user_id, text='Choose job location', reply_markup=await job_locations_keys())
+
 
 @rate_limit(5)
 @dp.callback_query_handler(JobLocation(), state=CreateJob.job_location)
@@ -163,9 +171,10 @@ async def send_invoice(call: CallbackQuery, state: FSMContext):
     db_status = await db.fetch_value('payable', 'settings')
     company = data['company_name']
     description = data['job_description']
-    job_title = data['job_name']
+    job_title = f"{company} - {data['job_name']}"
     category = data['job_category']
     location = data['job_location']
+    username = call.from_user.username
     if db_status[0]['payable']:
         await bot.send_invoice(user_id,
                                title='Your job advertisement',
@@ -185,10 +194,9 @@ async def send_invoice(call: CallbackQuery, state: FSMContext):
                                payload='HAPPY FRIDAYS COUPON'
                                )
     else:
-        mysql_description = f"Company: {company}<br>Location: {location}<br>{description}"
-        mysql_title = f"{company} - {job_title}"
-        mysql_db.insert_job(company, mysql_title, mysql_description, category)
-        await db.submit_order(user_id, company, job_title, description, category, location, False)
+        mysql_description = f"Company: {company}<br> Location: {location}<br>{description}"
+        mysql_db.insert_job(company, job_title, mysql_description, category, location)
+        await db.submit_order(user_id, company, job_title, description, category, location, False, username)
         await state.finish()
         await bot.send_message(chat_id=user_id, text='Success! Your job posting has been created!',
                                reply_markup=start_keys(user_id))
@@ -219,15 +227,15 @@ async def got_payment(message: types.Message, state: FSMContext):
     data = await state.get_data()
     company = data['company_name']
     description = data['job_description']
-    job_title = data['job_name']
+    job_title = f"{company} - {data['job_name']}"
     category = data['job_category']
     location = data['job_location']
+    username = message.from_user.username
     await db.submit_order(user_id, company, job_title, description,
-                          category, location, True)
+                          category, location, True, username)
     await state.finish()
     mysql_description = f"Company:{company}<br>Location: {location}<br>{description}"
-    mysql_title = f"{company} - {job_title}"
-    mysql_db.insert_job(company, mysql_title, mysql_description, category)
+    mysql_db.insert_job(company, job_title, mysql_description, category, location)
     await bot.send_chat_action(user_id, action='typing')
     await bot.send_message(user_id,
                            'Success! Thank you for using our services! '

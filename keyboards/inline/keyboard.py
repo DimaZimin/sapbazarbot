@@ -110,7 +110,7 @@ def admin_start_keys() -> InlineKeyboardMarkup:
     markup.insert(InlineKeyboardButton(text="Payable posting", callback_data='payable'))
     markup.insert(InlineKeyboardButton(text="Send mass message", callback_data='mass_message'))
     markup.insert(InlineKeyboardButton(text="Send channel message", callback_data='group_message'))
-    markup.insert(InlineKeyboardButton(text='Set posting price', callback_data='set_price'))
+    markup.insert(InlineKeyboardButton(text='Set posting fee', callback_data='set_price'))
     markup.insert(InlineKeyboardButton(text="Back to main", callback_data='admin_main'))
     return markup
 

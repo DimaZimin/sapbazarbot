@@ -1,3 +1,5 @@
+from mysql.connector import IntegrityError
+
 from utils.db_api import sqlmanager
 
 
@@ -48,12 +50,20 @@ class SAPBazarSQL:
         sql = f"SELECT id FROM categories WHERE name = '{category}'"
         return self.__fetchone(sql)
 
-    def insert_job(self, company, title, description, category):
+    def insert_job(self, company, title, description, category, location):
         sql = f"""INSERT INTO jobs(type_id, employer_id, category_id, title, description, 
                                    created_on, expires, is_active, views_count, city_id, apply_online, company) 
                   VALUES (1, 144,(SELECT id FROM categories WHERE name = '{category}'), '{title}','{description}', 
-                          NOW(), NOW() + INTERVAL 30 DAY, 1, 0, 1, 1,'{company}');"""
-        return self.__execute(sql)
+                          NOW(), NOW() + INTERVAL 30 DAY, 1, 0, (SELECT id FROM cities WHERE name = '{location}'), 
+                          1,'{company}');"""
+        try:
+            return self.__execute(sql)
+        except IntegrityError:
+            sql = f"""INSERT INTO jobs(type_id, employer_id, category_id, title, description, 
+                                       created_on, expires, is_active, views_count, city_id, apply_online, company) 
+                              VALUES (1, 144,(SELECT id FROM categories WHERE name = '{category}'), '{title}',
+                                     '{description}', NOW(), NOW() + INTERVAL 30 DAY, 1, 0, 1, 1,'{company}');"""
+            return self.__execute(sql)
 
     def get_column_where(self, table, column, where, condition):
         sql = f"""

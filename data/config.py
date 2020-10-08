@@ -9,6 +9,7 @@ PAYMENTS_PROVIDER_TOKEN = str(os.getenv("PAYMENTS_PROVIDER_TOKEN"))
 
 admins = [
     os.getenv("ADMIN_ID"),
+#    os.getenv("ADMIN_ID2"),
 ]
 
 ip = os.getenv("ip")

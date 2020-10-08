@@ -250,15 +250,25 @@ class Database:
         """
         return await self.pool.fetch(sql)
 
-    async def submit_order(self, user_id, company, job_name, job_description, job_category, job_location, paid):
+    async def submit_order(self, user_id, company, job_name, job_description,
+                           job_category, job_location, paid, username):
         sql = """
-        INSERT INTO job_posting_orders (user_id, company, job_name, job_description, job_category, job_location, paid)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO job_posting_orders (user_id, company, job_name, job_description, 
+                                        job_category, job_location, paid, username)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         """
-        return await self.pool.fetch(sql, user_id, company, job_name, job_description, job_category, job_location, paid)
+        return await self.pool.fetch(sql, user_id, company, job_name, job_description,
+                                     job_category, job_location, paid, username)
 
     async def set_posting_fees(self, fees: int):
         sql = f"""
         UPDATE settings SET posting_fees = {fees} 
         """
         return await self.pool.execute(sql)
+
+    async def get_username(self, job_title):
+        sql = f"""
+        SELECT username FROM job_posting_orders WHERE job_name LIKE '{job_title}%'
+        """
+        return await self.pool.fetch(sql)
+

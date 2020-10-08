@@ -1,10 +1,11 @@
 import asyncio
+import logging
 
 from aiogram.dispatcher import FSMContext
-import logging
-from keyboards.inline.keyboard import admin_start_keys, remove_categories_keys, remove_location_keys, start_keys
-from loader import dp, bot, db
 from aiogram.types import CallbackQuery, Message
+
+from loader import dp, bot, db
+from keyboards.inline.keyboard import admin_start_keys, remove_categories_keys, remove_location_keys, start_keys
 from middlewares.middleware import Admin, MassMessage, GroupMessage
 from filters.filters import IsCategory, IsLocation
 
@@ -12,18 +13,20 @@ from filters.filters import IsCategory, IsLocation
 @dp.callback_query_handler(text='ADMIN')
 async def admin_start(call: CallbackQuery):
     await call.answer(cache_time=60)
-    chat_id = call.message.chat.id
+    user_id = call.message.chat.id
     await call.message.edit_reply_markup()
-    await bot.send_message(chat_id=chat_id, text='Chose func', reply_markup=admin_start_keys())
+    logging.info(f"ADMIN {user_id} ENTERED THE MAIN ADMIN PANEL")
+    await bot.send_message(chat_id=user_id, text=f'Hello, Admin!', reply_markup=admin_start_keys())
 
 
 @dp.callback_query_handler(text='admin_new_category')
 async def admin_add_category(call: CallbackQuery):
     await call.answer(cache_time=60)
-    chat_id = call.message.chat.id
+    user_id = call.message.chat.id
     await Admin.new_category.set()
     await call.message.edit_reply_markup()
-    await bot.send_message(chat_id=chat_id,
+    logging.info(f"ADMIN {user_id} IS ADDING A CATEGORY...")
+    await bot.send_message(chat_id=user_id,
                            text='Type category name')
 
 
@@ -33,6 +36,7 @@ async def render_category(message: Message, state: FSMContext):
     category = message.text
     await db.add_category(category)
     await state.finish()
+    logging.info(f"ADMIN {user_id} ADDED A CATEGORY...")
     await bot.send_message(chat_id=user_id,
                            text=f'{category} category has been added!',
                            reply_markup=admin_start_keys())
@@ -42,9 +46,10 @@ async def render_category(message: Message, state: FSMContext):
 async def delete_category(call: CallbackQuery):
     await call.answer(cache_time=60)
     user_id = call.message.chat.id
+    logging.info(f"ADMIN {user_id} IS REMOVING A CATEGORY...")
     await call.message.edit_reply_markup()
     await bot.send_message(chat_id=user_id,
-                           text='Chose category which will be removed',
+                           text='Choose a category to remove',
                            reply_markup=await remove_categories_keys())
 
 
@@ -54,6 +59,7 @@ async def admin_remove_category(call: CallbackQuery):
     user_id = call.message.chat.id
     category = call.data[1:]
     await db.remove_category(category)
+    logging.info(f"ADMIN {user_id} REMOVED A CATEGORY...")
     await call.message.edit_reply_markup()
     await bot.send_message(chat_id=user_id,
                            text=f"{category} has been removed",
@@ -65,17 +71,18 @@ async def admin_back_to_main(call: CallbackQuery):
     await call.answer(cache_time=60)
     user_id = call.message.chat.id
     await call.message.edit_reply_markup()
-    await bot.send_message(chat_id=user_id, text='Main menu',
+    await bot.send_message(chat_id=user_id, text='Hello, Admin!',
                            reply_markup=admin_start_keys())
 
 
 @dp.callback_query_handler(text='admin_new_location')
 async def admin_add_location(call: CallbackQuery):
     await call.answer(cache_time=60)
-    chat_id = call.message.chat.id
+    user_id = call.message.chat.id
+    logging.info(f"ADMIN {user_id} IS ADDING A LOCATION...")
     await Admin.new_location.set()
     await call.message.edit_reply_markup()
-    await bot.send_message(chat_id=chat_id,
+    await bot.send_message(chat_id=user_id,
                            text='Type location name')
 
 
@@ -84,6 +91,7 @@ async def render_location(message: Message, state: FSMContext):
     user_id = message.chat.id
     location = message.text
     await db.add_location(location)
+    logging.info(f"ADMIN {user_id} ADDED {location} LOCATION...")
     await state.finish()
     await bot.send_message(chat_id=user_id,
                            text=f'{location} category has been added!',
@@ -95,6 +103,7 @@ async def delete_location(call: CallbackQuery):
     await call.answer(cache_time=30)
     user_id = call.message.chat.id
     await call.message.edit_reply_markup()
+    logging.info(f"ADMIN {user_id} IS REMOVING A LOCATION...")
     await bot.send_message(chat_id=user_id,
                            text='Choose a category to remove',
                            reply_markup=await remove_location_keys())
@@ -106,6 +115,7 @@ async def admin_del_location(call: CallbackQuery):
     user_id = call.message.chat.id
     location = call.data[1:]
     await db.remove_location(location)
+    logging.info(f"ADMIN {user_id} REMOVED A LOCATION...")
     await call.message.edit_reply_markup()
     await bot.send_message(chat_id=user_id,
                            text=f"{location} has been removed",
@@ -116,6 +126,7 @@ async def admin_del_location(call: CallbackQuery):
 async def admin_stats(call: CallbackQuery):
     await call.answer(cache_time=60)
     user_id = call.message.chat.id
+    logging.info(f"ADMIN {user_id} ACTIVATES STATISTICS...")
     total_users = await db.total_users()
     subscribed_users = await db.subscribed_users()
     locations_list = [location['location_name'] for location in await db.fetch_value('location_name', 'Locations')]
@@ -137,9 +148,10 @@ async def admin_stats(call: CallbackQuery):
 
 
 @dp.callback_query_handler(text='admin_main')
-async def admin_stats(call: CallbackQuery):
+async def admin_main_menu(call: CallbackQuery):
     await call.answer(cache_time=60)
     user_id = call.message.chat.id
+    logging.info(f"ADMIN {user_id} BACK TO MAIN MENU")
     await call.message.edit_reply_markup()
     await bot.send_message(chat_id=user_id,
                            text='Main panel', reply_markup=start_keys(user_id))
@@ -216,7 +228,7 @@ async def update_price(message: Message, state: FSMContext):
     user_id = message.from_user.id
     await db.set_posting_fees(int(message.text))
     await state.finish()
-    await bot.send_message(chat_id=user_id, text=f"Posting fees has been set to {int(message.text)/100} RUR",
+    await bot.send_message(chat_id=user_id, text=f"Posting fee has been set to {int(message.text)/100} RUR",
                            reply_markup=admin_start_keys())
 
 

@@ -80,7 +80,7 @@ async def set_location(call: CallbackQuery, state: FSMContext):
     await state.finish()
     await call.message.edit_reply_markup()
     await call.message.answer(f'{location} location has been chosen. '
-                              f'Do you want to subcribe on SAP blog',
+                              f'Do you want to subscribe on SAP blog',
                               reply_markup=blog_sub())
 
 
@@ -91,10 +91,13 @@ async def subscribe_on_blog(call: CallbackQuery):
     user_id = call.from_user.id
     if call.data == 'yes':
         await db.update_user(user_id, blog_subscription='True')
+        logging.info(f"USER {user_id} SUBSCRIBED ON BLOG")
     else:
         await db.update_user(user_id, blog_subscription='False')
+        logging.info(f"USER {user_id} REFUSED TO SUBSCRIBE ON BLOG")
     await db.update_user(user_id, job_subscription='True')
     await call.message.edit_reply_markup()
+    logging.info(f"USER {user_id} SUBSCRIBED FOR JOB ALERT")
     await call.message.answer(f'You have successfully subscribed for job alert!',
                               reply_markup=unsubscribe_key())
 
@@ -108,19 +111,25 @@ async def unsubscribe(message: Message):
     user_id = message.from_user.id
     await db.delete_user_subscription(user_id)
     await db.update_user(user_id, job_subscription='False')
-    logging.info(f'USER ID: {user_id} UNSUSCRIBED')
+    logging.info(f'USER ID: {user_id} UNSUBSCRIBED FROM JOB ALERT')
     await message.answer("You have successfully unsubscribed from job alert", reply_markup=ReplyKeyboardRemove())
     await message.answer("Thank you for choosing our service", reply_markup=start_keys(user_id))
+
 
 @rate_limit(5)
 @dp.message_handler(Command(['unsubscribe']))
 async def unsubscribe_blog(message: Message):
     user_id = message.chat.id
     await db.update_user(user_id=user_id, blog_subscription='False')
+    logging.info(f'USER ID: {user_id} UNSUBSCRIBED FROM BLOG')
     await bot.send_message(user_id, text='You have been unsubscribed from blog.')
 
 
-async def scheduled_task(wait_time):
+async def contact_to_send(contact):
+    return f"@{contact[0]['username']}" if contact else 'https://sapbazar.com/more/contactus'
+
+
+async def job_task(wait_time):
     """
     Main task function that runs every 'wait_time'. Entry parameter must be an integer and corresponds to seconds.
     :param wait_time: integer - seconds
@@ -132,18 +141,26 @@ async def scheduled_task(wait_time):
         new_ads = json_manager.get_values('job_new')
         logging.info(f'NEW ADS: {new_ads}')
         if new_ads:
-            logging.info('IF PERFORMING...')
+            logging.info('ITERATION OVER ADS...')
             for ad_url in new_ads:
                 html = parsers.HTMLParser(ad_url)
                 category = html.category()
                 location = html.location()
+                title = html.job_title()
+                contact = await db.get_username(f"{' '.join(html.job_title().split()[:-3])}")
                 logging.info(f'LINK: {ad_url} CATEGORY: {category} LOCATION: {location}')
                 users = await db.select_user(location=location, category=category)
                 logging.info(f'USERS: {users}')
+                logging.info(f"MESSAGE SENT TO CHANNEL")
+                await bot.send_message(chat_id='@ivankaim', text=f"<a href='{ad_url}'>New job opening: "
+                                                                 f"{title}</a>"
+                                                                 f"\nContact: {await contact_to_send(contact)}",
+                                       parse_mode='HTML')
                 for user in users:
                     logging.info(f'MESSAGE SENT TO: {user["user_id"]}')
-                    await bot.send_message(user['user_id'], text=f"<a href='{ad_url}'>New job openning: "
-                                                                 f"{html.job_title()}</a>",
+                    await bot.send_message(user['user_id'], text=f"<a href='{ad_url}'>New job opening: "
+                                                                 f"{title}</a>"
+                                                                 f"\nContact: {await contact_to_send(contact)}",
                                                                  parse_mode='HTML')
         json_manager.update_job_urls()
 
@@ -155,18 +172,20 @@ async def blog_task(wait_time):
         new_posts = json_manager.new_blog_post()
         logging.info(f"PERFORMING BLOG SCRAPING...\nNEW POSTS: {new_posts}")
         if new_posts:
-            logging.info("IF CONDITION")
+            logging.info("ITERATION OVER BLOG ARTICLES")
             for post in new_posts:
                 category = post[1]
                 post_url = post[0]
                 logging.info(f"CATEGORY: {category}\nURL: {post_url}\n")
                 subscribers = await db.get_blog_subscription_users(f"{category}")
                 logging.info(f"SUBSCRIBERS: {subscribers}")
+                logging.info(f"SENDING BLOG MESSAGE TO CHANNEL")
+                await bot.send_message(chat_id='@sapbazar', text=f'<a href="{post_url}"> Hey! We got'
+                                                                 f' a new post here! Check this out.</a>',
+                                       parse_mode='HTML')
                 for subscriber in subscribers:
                     logging.info(f"SENDING URL TO: {subscriber}")
                     await bot.send_message(subscriber['user_id'], text=f'<a href="{post_url}"> Hey! We got'
                                                                        f' a new post here! Check this out.</a>',
                                            parse_mode='HTML')
         json_manager.update_blog_urls()
-
-
