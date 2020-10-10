@@ -6,7 +6,7 @@ from aiogram.dispatcher.filters import Command, Text
 from aiogram.types import CallbackQuery, ReplyKeyboardRemove, Message
 from filters.filters import SubscriptionCategories, SubscriptionLocations
 from keyboards.inline.keyboard import start_subscription, subscription_category_keys, \
-    localization_keys, unsubscribe_key, blog_sub
+    subscription_locations_keys, unsubscribe_key, blog_sub
 
 from middlewares.middleware import Form
 from keyboards.inline.keyboard import start_keys
@@ -26,7 +26,7 @@ async def process_subscription(call: CallbackQuery):
     name = f"{call.from_user.first_name} {call.from_user.last_name}"
     await db.add_user(user_id, name)
     logging.info(f'USER ID: {user_id} CHOOSING CATEGORIES')
-    await call.message.answer('Please choose your SAP categories',
+    await call.message.answer('Please select a SAP category',
                               reply_markup=await subscription_category_keys())
     await call.message.edit_reply_markup()
 
@@ -45,7 +45,7 @@ async def choose_category(call: CallbackQuery):
         logging.info(f'CHAT ID: {user_id} CHOOSING LOCATION')
         await Form.state.set()
         await call.message.edit_reply_markup()
-        await call.message.answer('Please, choose your location', reply_markup=await localization_keys())
+        await call.message.answer('Please, choose your location', reply_markup=await subscription_locations_keys())
     elif call.data == 'next' and not user_categories:
         logging.info(f'EMPTY CATEGORY\tCHAT ID: {call.from_user.id}')
         await call.message.edit_reply_markup()
@@ -60,7 +60,8 @@ async def choose_category(call: CallbackQuery):
         await db.add_user_category(user_id=user_id, category=category)
         logging.info(f'CATEGORY UPDATED: {category} FOR USER ID: {user_id}')
         await call.message.edit_reply_markup()
-        await call.message.answer(f'{category} category has been added. Choose another category or press Next',
+        await call.message.answer(f'{category} category has been selected. Select another '
+                                  f'category or press the "Next" button',
                                   reply_markup=await subscription_category_keys())
 
 
@@ -79,8 +80,8 @@ async def set_location(call: CallbackQuery, state: FSMContext):
     logging.info(f'LOCATION UPDATED: {location} FOR USER ID: {user_id}')
     await state.finish()
     await call.message.edit_reply_markup()
-    await call.message.answer(f'{location} location has been chosen. '
-                              f'Do you want to subscribe on SAP blog',
+    await call.message.answer(f'{location} location has been selected. '
+                              f'Do you want to subscribe to the SAP blog?',
                               reply_markup=blog_sub())
 
 
@@ -126,7 +127,7 @@ async def unsubscribe_blog(message: Message):
 
 
 async def contact_to_send(contact):
-    return f"@{contact[0]['username']}" if contact else 'https://sapbazar.com/more/contactus'
+    return f"Contact: @{contact[0]['username']}" if contact else ''
 
 
 async def job_task(wait_time):
@@ -152,9 +153,9 @@ async def job_task(wait_time):
                 users = await db.select_user(location=location, category=category)
                 logging.info(f'USERS: {users}')
                 logging.info(f"MESSAGE SENT TO CHANNEL")
-                await bot.send_message(chat_id='@ivankaim', text=f"<a href='{ad_url}'>New job opening: "
+                await bot.send_message(chat_id='@sapbazar', text=f"<a href='{ad_url}'>New job opening: "
                                                                  f"{title}</a>"
-                                                                 f"\nContact: {await contact_to_send(contact)}",
+                                                                 f"\n{await contact_to_send(contact)}",
                                        parse_mode='HTML')
                 for user in users:
                     logging.info(f'MESSAGE SENT TO: {user["user_id"]}')

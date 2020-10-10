@@ -18,3 +18,4 @@ urllib3==1.25.10
 yarl==1.5.1
 asyncpg~=0.21.0
 pyodbc~=4.0.30
+mysql-connector-python~=8.0.21

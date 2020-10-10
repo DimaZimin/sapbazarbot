@@ -3,8 +3,7 @@ from urllib.request import urlopen
 import json
 from bs4 import BeautifulSoup
 import requests
-from loader import json_db
-import os
+
 
 class XMLParser:
     """
@@ -110,4 +109,3 @@ class BlogParser(HTMLParser):
             return 'SAP S/4HANA'
         else:
             return 'SAP ' + string
-

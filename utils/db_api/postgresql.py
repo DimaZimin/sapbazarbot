@@ -199,7 +199,6 @@ class Database:
         except UniqueViolationError:
             pass
 
-
     async def delete_data(self, table):
         sql = f"""
         DELETE FROM {table}
@@ -251,14 +250,14 @@ class Database:
         return await self.pool.fetch(sql)
 
     async def submit_order(self, user_id, company, job_name, job_description,
-                           job_category, job_location, paid, username):
+                           job_category, job_location, paid, username, email):
         sql = """
         INSERT INTO job_posting_orders (user_id, company, job_name, job_description, 
-                                        job_category, job_location, paid, username)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                                        job_category, job_location, paid, username, email)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         """
-        return await self.pool.fetch(sql, user_id, company, job_name, job_description,
-                                     job_category, job_location, paid, username)
+        return await self.pool.execute(sql, user_id, company, job_name, job_description,
+                                       job_category, job_location, paid, username, email)
 
     async def set_posting_fees(self, fees: int):
         sql = f"""
@@ -271,4 +270,3 @@ class Database:
         SELECT username FROM job_posting_orders WHERE job_name LIKE '{job_title}%'
         """
         return await self.pool.fetch(sql)
-

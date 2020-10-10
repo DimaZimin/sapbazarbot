@@ -1,8 +1,9 @@
-import aiogram
+import logging
+
 from aiogram.dispatcher.filters import CommandStart
 from aiogram import types
 from aiogram.utils.exceptions import MessageIdentifierNotSpecified
-import logging
+
 from keyboards.inline.keyboard import start_keys
 from loader import dp, bot
 
@@ -12,6 +13,7 @@ from utils.misc import rate_limit
 START_TEXT = "You can subscribe to new SAP job openings via SAP Bazar BOT. " \
              "Sign up to receive new job alerts straight to this chat. " \
              "You can select all the categories you are interested in by pressing 'Subscribe'"
+
 
 @rate_limit(5, 'start')
 @dp.message_handler(CommandStart())

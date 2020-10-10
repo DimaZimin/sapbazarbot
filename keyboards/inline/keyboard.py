@@ -11,7 +11,7 @@ start_subscription = CallbackData('subscription', 'action')
 job_post_callback = CallbackData('job_posting', 'posting')
 invoice_callback = CallbackData('send_invoice', 'confirm')
 location_callback = CallbackData('choose_location', 'location')
-remove_category_callback = CallbackData('remove_category', 'category')
+# remove_category_callback = CallbackData('remove_category', 'category')
 
 
 def start_keys(admin_id):
@@ -75,7 +75,17 @@ def confirmation_keys() -> InlineKeyboardMarkup:
             [InlineKeyboardButton('Cancel', callback_data=invoice_callback.new(confirm='no'))]])
 
 
-async def localization_keys() -> InlineKeyboardMarkup:
+def payment_keys() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        row_width=1,
+        inline_keyboard=[
+            [InlineKeyboardButton('Pay', pay=True)],
+            [InlineKeyboardButton('Cancel', callback_data='cancel_payment')]
+        ]
+    )
+
+
+async def subscription_locations_keys() -> InlineKeyboardMarkup:
     """
     Inline keyboard associated with locations and cities included in LOCATIONS list namespace.
     You can add new locations to LOCATIONS namespace. Make sure that added location is exactly the same as it is on the
