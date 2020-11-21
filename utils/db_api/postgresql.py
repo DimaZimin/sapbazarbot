@@ -12,8 +12,8 @@ class Database:
             asyncpg.create_pool(
                 database='sap_bazar',
                 user=config.PGUSER,
-                password=config.PGPASSWORD,
-                host=config.ip
+                password='9Bg7r7cfeb',
+                host='db'
             )
         )
 
@@ -30,6 +30,16 @@ class Database:
         );
         """
 
+        await self.pool.execute(sql)
+
+    async def create_table_subscription_locations(self):
+        sql = """
+            CREATE TABLE IF NOT EXISTS subscription_locations (
+            user_id INT NOT NULL REFERENCES Users (user_id),
+            location VARCHAR(255),
+            UNIQUE (user_id, location)
+            );
+        """
         await self.pool.execute(sql)
 
     async def create_table_categories(self):
@@ -114,9 +124,11 @@ class Database:
 
     async def select_user(self, location, category):
         sql = f"""
-        SELECT subscriptions.user_id, location, category 
-        FROM Users LEFT JOIN Subscriptions ON users.user_id = subscriptions.user_id
-        WHERE users.location = '{location}' 
+        SELECT subscriptions.user_id, subscription_locations.location, category 
+        FROM Users 
+        LEFT JOIN Subscriptions ON users.user_id = subscriptions.user_id
+        LEFT JOIN subscription_locations on users.user_id = subscription_locations.user_id
+        WHERE subscription_locations.location = '{location}' 
         AND subscriptions.category = '{category}'
         """
         return await self.pool.fetch(sql)
@@ -199,6 +211,15 @@ class Database:
         except UniqueViolationError:
             pass
 
+    async def add_user_location(self, user_id, location):
+        sql = f"""
+        INSERT INTO subscription_locations (user_id, location) VALUES ($1, $2)
+        """
+        try:
+            return await self.pool.execute(sql, user_id, location)
+        except UniqueViolationError:
+            pass
+
     async def delete_data(self, table):
         sql = f"""
         DELETE FROM {table}
@@ -208,7 +229,9 @@ class Database:
     async def delete_user_subscription(self, user_id):
         sql = f"""
         DELETE FROM subscriptions
-        WHERE user_id = {user_id}
+        WHERE user_id = {user_id};
+        DELETE FROM subscription_locations 
+        WHERE user_id = {user_id};
         """
         return await self.pool.execute(sql)
 

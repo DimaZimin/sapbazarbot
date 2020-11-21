@@ -1,158 +1,155 @@
 {
     "job_urls": [
-        "https://jobs.sapbazar.com/job/abap-developer-at-freelance-remote/1124",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-mm-k2-%d1%83%d0%b4%d0%b0%d0%bb%d0%b5%d0%bd%d0%bd%d0%be-at-teamidea-russia/1123",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-%d1%8d%d0%ba%d1%81%d0%bf%d0%b5%d1%80%d1%82-sap-co-at-%d0%be%d0%be%d0%be-%d0%b8%d0%ba-%d1%81%d0%b8%d0%b1%d0%b8%d0%bd%d1%82%d0%b5-russia/1112",
-        "https://jobs.sapbazar.com/job/sap-sd-senior-consultant-fmcg-roll-out-at-ey-moscow/1111",
-        "https://jobs.sapbazar.com/job/senior-consultant-sap-fi-at-ey-moscow/1109",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-bi-at-freelance-remote/1105",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-bw-on-hana-at-teamidea-russia/1104",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-mm-k2-k3-at-teamidea-russia/1103",
-        "https://jobs.sapbazar.com/job/%d1%8d%d0%ba%d1%81%d0%bf%d0%b5%d1%80%d1%82%d0%b0%d1%80%d1%85%d0%b8%d1%82%d0%b5%d0%ba%d1%82%d0%be%d1%80-sap-fi-at-%d0%be%d0%be%d0%be-%d0%b8%d0%ba-%d1%81%d0%b8%d0%b1%d0%b8%d0%bd%d1%82%d0%b5%d0%ba-russia/1102",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-co-at-teamidea-russia/1101",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-mm-at-teamidea-moscow/1100",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-hcmpy-at-freelance-remote/1099",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-%d1%8d%d0%ba%d1%81%d0%bf%d0%b5%d1%80%d1%82-sap-co-%d0%bf%d0%be-%d0%bf%d0%b5%d1%80%d0%b5%d1%80%d0%b0%d0%b1%d0%be%d1%82%d0%ba%d0%b5-russia/1098",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-%d1%8d%d0%ba%d1%81%d0%bf%d0%b5%d1%80%d1%82-sap-fifm-%d0%bf%d0%be-%d0%bf%d0%b5%d1%80%d0%b5%d1%80%d0%b0%d0%b1%d0%be%d1%82%d0%ba%d0%b5-russia/1097",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-bw-at-%d1%81%d0%b5%d0%b2%d0%b5%d1%80%d1%81%d1%82%d0%b0%d0%bb%d1%8c-russia/1096",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-sd-at-%d1%81%d0%b5%d0%b2%d0%b5%d1%80%d1%81%d1%82%d0%b0%d0%bb%d1%8c-russia/1095",
-        "https://jobs.sapbazar.com/job/%d1%81%d1%82%d0%b0%d1%80%d1%88%d0%b8%d0%b9-%d1%81%d0%bf%d0%b5%d1%86%d0%b8%d0%b0%d0%bb%d0%b8%d1%81%d1%82-sap-sd-at-%d1%81%d0%b5%d0%b2%d0%b5%d1%80%d1%81%d1%82%d0%b0%d0%bb%d1%8c-russia/1094"
+        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-mmsd-at-teamidea-russia/1157",
+        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-pp-at-teamidea-russia/1156",
+        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-mm-at-freelance-remote/1155",
+        "https://jobs.sapbazar.com/job/%d0%b1%d0%b8%d0%b7%d0%bd%d0%b5%d1%81-%d0%b0%d0%bd%d0%b0%d0%bb%d0%b8%d1%82%d0%b8%d0%ba-bi-at-ibs-russia/1154",
+        "https://jobs.sapbazar.com/job/freelance-sap-s4-hana-%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-at-admin-company-russia/1153",
+        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-sd-at-teamidea-russia/1152",
+        "https://jobs.sapbazar.com/job/%d1%80%d1%83%d0%ba%d0%be%d0%b2%d0%be%d0%b4%d0%b8%d1%82%d0%b5%d0%bb%d1%8c-%d0%bf%d1%80%d0%be%d0%b5%d0%ba%d1%82%d0%b0-%d0%bf%d0%be-%d0%bc%d0%be%d0%b4%d0%b5%d1%80%d0%bd%d0%b8%d0%b7%d0%b0%d1%86%d0%b8-russia/1151",
+        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-pm-at-ibs-russia/1150",
+        "https://jobs.sapbazar.com/job/pwc-senior-consultant-sap-pp-at-admin-company-moscow/1149",
+        "https://jobs.sapbazar.com/job/pwc-senior-consultant-sap-fi-at-admin-company-moscow/1148",
+        "https://jobs.sapbazar.com/job/pwc-senior-consultant-sap-bw-at-admin-company-moscow/1147",
+        "https://jobs.sapbazar.com/job/ey-russia-%d1%81%d1%82%d0%b0%d1%80%d1%88%d0%b8%d0%b9-%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-bwbo-at-admin-company-russia/1146",
+        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-bw-at-teamidea-russia/1145",
+        "https://jobs.sapbazar.com/job/%d0%ba%d1%83%d1%80%d1%81-%d0%bf%d0%be-sap-ui5-%d1%82%d0%be%d0%bb%d1%8c%d0%ba%d0%be-%d1%81%d0%b5%d0%b3%d0%be%d0%b4%d0%bd%d1%8f-%d0%ba%d1%83%d1%80%d1%81-%d0%bf%d0%be-%d1%80%d0%b0%d0%b7%d1%80%d0%b0-remote/1144",
+        "https://jobs.sapbazar.com/job/erg-%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82%d1%8b-%d0%bc%d0%bc-abap-bw-at-admin-company-kazakhstan/1143",
+        "https://jobs.sapbazar.com/job/%d1%80%d1%83%d0%ba%d0%be%d0%b2%d0%be%d0%b4%d0%b8%d1%82%d0%b5%d0%bb%d1%8c-%d0%bd%d0%b0%d0%bf%d1%80%d0%b0%d0%b2%d0%bb%d0%b5%d0%bd%d0%b8%d1%8f-sap-ewm-at-freelance-saint-petersburg/1142",
+        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-co-at-%d0%be%d0%be%d0%be-%d0%b8%d0%ba-%d1%81%d0%b8%d0%b1%d0%b8%d0%bd%d1%82%d0%b5%d0%ba-russia/1137",
+        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-fi-fm-at-freelance-saint-petersburg/1136",
+        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-lo-le-wmsdwms-at-teamidea-russia/1135"
     ],
     "job_new": [],
     "blog_urls": [
         [
-            "https://sapbazar.com/articles/item/4503-pitfalls-at-s4hana-db-tables-with-replacement-object",
-            "SAP ABAP"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4502-various-solutions-to-handle-maternity-leave-in-ec-time-management",
-            "SAP success factors"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4501-collective-order-direct-production-of-sub-assemblies-and-its-integration-to-ewm",
+            "https://sapbazar.com/articles/item/4711-sap-s4hana-reviews-and-what-if-scenarios-with-eppm",
             "SAP S/4HANA"
         ],
         [
-            "https://sapbazar.com/articles/item/4500-role-based-permissions-in-sap-successfactors",
-            "SAP success factors"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4499-integrated-production-engineering-and-planning-in-sap-s4hana-manufacturing-with-peo-and-ppds-process-overview",
+            "https://sapbazar.com/articles/item/4710-how-to-generate-a-notification-when-any-business-partnervendorcustomer-is-changed-in-sap-s4hana",
             "SAP S/4HANA"
         ],
         [
-            "https://sapbazar.com/articles/item/4498-how-to-create-generic-drilldown-report-with-manage-kpis-and-reports",
+            "https://sapbazar.com/articles/item/4709-manufacturing-and-supply-chain-in-sap-s4hana-cloud-2011",
             "SAP S/4HANA"
         ],
         [
-            "https://sapbazar.com/articles/item/4497-new-installation-of-s4hana-2020-fps0-part-2-installation",
-            "SAP S/4HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4496-tuning-sap-iq-nls-in-sap-bw-on-hana-and-bw4hana",
+            "https://sapbazar.com/articles/item/4705-sap-hana-cloud-smart-data-access-for-google-bigquery",
             "SAP HANA"
         ],
         [
-            "https://sapbazar.com/articles/item/4495-sap-s4hana-2020-highlights-in-seconds",
-            "SAP S/4HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4492-sap-s4hana-apis-and-business-events-on-sap-api-business-hub-the-wait-is-over",
-            "SAP S/4HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4493-intelligent-custom-code-management",
-            "SAP S/4HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4494-benefit-from-sap-master-data-governance-on-sap-s4hana-2020",
-            "SAP S/4HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4491-join-the-next-customer-engagement-initiative-project-for-sap-application-interface-framework",
-            "SAP S/4HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4490-controlled-usage-not-released-functions",
+            "https://sapbazar.com/articles/item/4706-read-material-basic-data-text-long-text-without-using-function-module-readtext-in-cds-views",
             "SAP ABAP"
         ],
         [
-            "https://sapbazar.com/articles/item/4489-ui5ers-live-the-monthly-webcast-for-ui5-enthusiasts",
+            "https://sapbazar.com/articles/item/4707-gw-service-for-inbound-delivery-creationvl31n-in-sap-s4-hana",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4704-ec-time-and-attendance-new-features-h2-2020",
+            "SAP success factors"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4703-sap-s4hana-system-upgrade-using-zero-downtime-option-of-sum-poc-customer-case",
+            "SAP S/4HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4702-sap-central-finance-co-secondary-postings",
+            "SAP S/4HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4701-separate-data-classes-in-unit-tests",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4708-sap-s4hana-authorizations",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4699-sap-s4hana-authorizations",
+            "SAP S/4HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4700-sap-fiori-for-sap-s4hana-best-practices-for-structuring-spaces-and-pages",
+            "SAP S/4HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4698-multi-model-in-hanaml-26-for-python-setup",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4696-brf-settings-for-purchase-orders",
+            "SAP S/4HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4695-rehire-with-new-employment-and-rectifying-an-incorrect-hire-action",
+            "SAP success factors"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4697-sap-architecture-whats-different-in-azure",
+            "SAP S/4HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4694-whats-new-in-sap-s4hana-cloud-2011-release-technology-topics",
+            "SAP S/4HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4691-validation-of-disabled-fields-in-dynamic-group-filters-in-sap-successfactors",
+            "SAP success factors"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4690-use-sles-152-to-automate-sap-hana-ha-maintenance",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4692-user-experience-ux-sessions-at-sap-teched-2020",
+            "SAP S/4HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4693-asset-accounting-what-is-new-in-s4hana-2020",
+            "SAP S/4HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4686-cts-is-beautiful",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4688-maintaining-business-configuration-in-sap-cloud-platform-master-data-for-business-partners",
+            "SAP S/4HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4687-changing-work-item-initiator-in-a-workflow",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4689-sap-s4hana-conversion-road-map-high-level-sap-basis",
+            "SAP S/4HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4685-tap-into-your-network-using-python",
+            "SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4684-how-to-check-the-maximum-length-of-a-function-import-parameter-in-segw-based-odata-services-the-old-way",
+            "SAP ABAP"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4682-key-takeaways-from-2020-steel-success-strategy",
+            "SAP S/4HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4683-highlights-for-product-compliance-in-sap-s4hana-2020-part-1-product-marketability-and-chemical-compliance",
+            "SAP S/4HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4681-inside-sap-s4hana-anniversary-celebrating-one-year-of-product-expertise-by-podcast",
+            "SAP S/4HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/4679-a-brief-history-of-openui5-and-sapui5",
             "SAP UI5"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4488-2h-2020-announcement-planned-retirement-of-http-basic-authentication-sfapiodata-api",
-            "SAP success factors"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4487-three-key-questions-you-need-to-answer-before-your-sap-s4hana-implementation",
-            "SAP S/4HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4486-sap-abap-trial-in-docker-windows-setup-guide",
-            "SAP ABAP"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4485-using-sap-s4hana-settlement-management-for-oil-and-gas-downstream-retail-fuel-commissions-royalties-fixed-payouts-charges",
-            "SAP S/4HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4484-hana-fast-restart-customer-experience",
-            "SAP HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4483-equipment-address-management",
-            "SAP ABAP"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4458-sap-sybase-iq-the-hidden-treasure-jp",
-            "SAP HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4482-new-version-now-generally-available-sap-innovation-and-optimization-pathfinder-20",
-            "SAP S/4HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4481-odata-with-sap-hana-cloud-hands-on-video-tutorials",
-            "SAP HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4480-secure-by-default-for-sap-s4hana-2020",
-            "SAP S/4HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4479-new-installation-of-s4hana-2020-fps0-part-1-maintenance-planner",
-            "SAP S/4HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4478-sap-s4hana-finance-for-group-reporting-2020-release-is-generally-available",
-            "SAP S/4HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4477-sap-s4hana-release-2020-short-guide",
-            "SAP S/4HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4476-sap-archiving-process-and-configuration-steps",
-            "SAP HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4473-whats-new-sap-s4hana-2020",
-            "SAP S/4HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4474-major-next-steps-of-sap-fiori-3-available-for-sap-s4hana-on-premise-spaces-central-entry-point-and-more",
-            "SAP S/4HANA"
-        ],
-        [
-            "https://sapbazar.com/articles/item/4475-highlights-for-finance-in-sap-s4hana-2020",
-            "SAP S/4HANA"
         ]
     ],
-    "blog_new": [
-        [
-            "https://sapbazar.com/articles/item/4503-pitfalls-at-s4hana-db-tables-with-replacement-object",
-            "SAP ABAP"
-        ]
-    ]
+    "blog_new": []
 }

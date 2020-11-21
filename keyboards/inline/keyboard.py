@@ -96,6 +96,7 @@ async def subscription_locations_keys() -> InlineKeyboardMarkup:
     for location in locations:
         button = InlineKeyboardButton(location, callback_data=location)
         markup.insert(button)
+    markup.insert(InlineKeyboardButton('Next', callback_data='location_skip'))
     return markup
 
 

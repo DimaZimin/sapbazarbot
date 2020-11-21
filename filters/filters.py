@@ -37,5 +37,5 @@ class SubscriptionCategories(BoundFilter):
 class SubscriptionLocations(BoundFilter):
     async def check(self, call: types.CallbackQuery) -> bool:
         locations = [location['location_name'] for location in
-                     await db.fetch_value('location_name', 'Locations')]
+                     await db.fetch_value('location_name', 'Locations')] + ['location_skip']
         return call.data in locations

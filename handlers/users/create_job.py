@@ -32,7 +32,7 @@ async def start_creating_job_post(call: CallbackQuery):
     await bot.send_chat_action(chat_id=user_id, action='typing')
     """TODO: ADD USER TO DATABASE"""
     await CreateJob.company_name.set()
-    await bot.send_message(user_id, 'Please, type your company name')
+    await bot.send_message(user_id, 'Please, type your company name. To exit this process press /cancel')
 
 
 @rate_limit(5)
@@ -42,10 +42,14 @@ async def process_company_name(message: Message, state: FSMContext):
     company_name = message.text
     await bot.send_chat_action(user_id, action='typing')
     logging.info(f'USER ID {user_id} COMPANY: {company_name} ')
-    async with state.proxy() as data:
-        data["company_name"] = company_name
-    await CreateJob.job_name.set()
-    await bot.send_message(user_id, 'Please, type a job title')
+    if message.text == '/cancel':
+        await state.finish()
+        await bot.send_message(user_id, 'Welcome back! To open main menu press /start')
+    else:
+        async with state.proxy() as data:
+            data["company_name"] = company_name
+        await CreateJob.job_name.set()
+        await bot.send_message(user_id, 'Please, type a job title. To exit this process press /cancel')
 
 
 @rate_limit(5)
@@ -55,10 +59,14 @@ async def process_job_name(message: Message, state: FSMContext):
     user_id = message.chat.id
     logging.info(f'USER ID {user_id} JOB TITLE: {job_name} ')
     await bot.send_chat_action(user_id, action='typing')
-    async with state.proxy() as data:
-        data["job_name"] = job_name
-    await CreateJob.job_description.set()
-    await message.answer('Please, write a job description')
+    if message.text == '/cancel':
+        await state.finish()
+        await bot.send_message(user_id, 'Welcome back To open main menu press /start')
+    else:
+        async with state.proxy() as data:
+            data["job_name"] = job_name
+        await CreateJob.job_description.set()
+        await message.answer('Please, write a job description. To exit this process press /cancel')
 
 
 @rate_limit(5)
@@ -68,10 +76,14 @@ async def process_job_description(message: Message, state: FSMContext):
     job_description = message.text
     logging.info(f'USER ID {user_id} JOB DESCRIPTION: {job_description} ')
     await bot.send_chat_action(user_id, action='typing')
-    async with state.proxy() as data:
-        data["job_description"] = job_description
-    await CreateJob.job_category.set()
-    await bot.send_message(chat_id=user_id, text='Select a job category', reply_markup=await job_categories_keys())
+    if message.text == '/cancel':
+        await state.finish()
+        await bot.send_message(user_id, 'Welcome back! To open main menu press /start')
+    else:
+        async with state.proxy() as data:
+            data["job_description"] = job_description
+        await CreateJob.job_category.set()
+        await bot.send_message(chat_id=user_id, text='Select a job category', reply_markup=await job_categories_keys())
 
 
 @rate_limit(5)
@@ -214,7 +226,7 @@ async def send_invoice(call: CallbackQuery, state: FSMContext):
     else:
         mysql_description = f"Company: {company}<br> Location: {location}<br>{description}"
         mysql_db.insert_job(company, job_title, mysql_description, category, location)
-        await db.submit_order(user_id, company, job_title, description, category, location, False, username)
+        await db.submit_order(user_id, company, job_title, description, category, location, False, username, None)
         await state.finish()
         logging.info(f'USER ID {user_id} JOB POSTED')
         await bot.send_message(chat_id=user_id, text='Success! Your job posting has been created!',
