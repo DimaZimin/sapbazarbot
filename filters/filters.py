@@ -1,6 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher.filters import BoundFilter
-from loader import db
+
+from loader import db, questions_api
 
 
 class JobCategory(BoundFilter):
@@ -39,3 +40,13 @@ class SubscriptionLocations(BoundFilter):
         locations = [location['location_name'] for location in
                      await db.fetch_value('location_name', 'Locations')]
         return call.data in locations
+
+
+class QuestionCategories(BoundFilter):
+    async def check(self, call: types.CallbackQuery) -> bool:
+        locations = questions_api.get_categories()
+        return call.data.split('QuestionCategory_')[1] in locations
+
+class AnswerQuestionID(BoundFilter):
+    async def check(self, call: types.CallbackQuery) -> bool:
+        return call.data.split('AnswerQuestion_')[0]

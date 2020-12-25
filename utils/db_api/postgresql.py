@@ -84,6 +84,20 @@ class Database:
         """
         await self.pool.execute(sql)
 
+    async def create_table_questions(self):
+        sql = """
+        CREATE TABLE IF NOT EXISTS questions (
+        user_id INT NOT NULL REFERENCES Users (user_id),
+        post_id VARCHAR (255),
+        user_mail VARCHAR (255), 
+        external_user_id VARCHAR (255)
+        );
+        """
+        await self.pool.execute(sql)
+
+    async def create_table_answers(self):
+        pass
+
     async def payable_post(self, payable='True'):
         sql = f"""
         UPDATE settings 
@@ -221,6 +235,12 @@ class Database:
         """
         return await self.pool.fetch(sql)
 
+    async def get_category_subscribers(self, category):
+        sql = f"""
+        SELECT user_id FROM subscriptions WHERE category = '{category}'
+        """
+        return await self.pool.fetch(sql)
+
     async def remove_category(self, category):
         sql = f"""
         DELETE FROM Categories
@@ -270,3 +290,10 @@ class Database:
         SELECT username FROM job_posting_orders WHERE job_name LIKE '{job_title}%'
         """
         return await self.pool.fetch(sql)
+
+    async def create_question(self, user_id, post_id, user_email, external_user_id):
+        sql = f"""
+        INSERT INTO questions (user_id, post_id, user_mail, external_user_id) 
+        VALUES($1, $2, $3, $4)
+        """
+        return await self.pool.execute(sql, user_id, post_id, user_email, external_user_id)

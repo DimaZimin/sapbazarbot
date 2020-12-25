@@ -6,7 +6,7 @@ from aiogram.types import CallbackQuery, Message
 
 from loader import dp, bot, db
 from keyboards.inline.keyboard import admin_start_keys, remove_categories_keys, remove_location_keys, start_keys
-from middlewares.middleware import Admin, MassMessage, GroupMessage
+from states.states import Admin, MassMessage, GroupMessage
 from filters.filters import IsCategory, IsLocation
 
 

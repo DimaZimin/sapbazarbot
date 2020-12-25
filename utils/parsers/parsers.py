@@ -4,6 +4,8 @@ import json
 from bs4 import BeautifulSoup
 import requests
 
+from loader import json_db
+
 
 class XMLParser:
     """

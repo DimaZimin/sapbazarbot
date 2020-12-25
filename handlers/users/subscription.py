@@ -8,7 +8,7 @@ from filters.filters import SubscriptionCategories, SubscriptionLocations
 from keyboards.inline.keyboard import start_subscription, subscription_category_keys, \
     subscription_locations_keys, unsubscribe_key, blog_sub
 
-from middlewares.middleware import Form
+from states.states import Form
 from keyboards.inline.keyboard import start_keys
 from loader import dp, db, bot, json_db
 from utils.parsers import parsers

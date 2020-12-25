@@ -4,7 +4,7 @@ This file contains keyboard and callback settings
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
 from aiogram.utils.callback_data import CallbackData
 from data.config import admins
-from loader import db
+from loader import db, questions_api
 
 category_callback = CallbackData('choose_category', 'category')
 start_subscription = CallbackData('subscription', 'action')
@@ -22,6 +22,7 @@ def start_keys(admin_id):
     markup.insert(InlineKeyboardButton(text="✅ Subscribe", callback_data=start_subscription.new(action='subscribe')))
     markup.insert(InlineKeyboardButton(text="💼 Post a Job", callback_data=job_post_callback.new(posting='start')))
     markup.insert(InlineKeyboardButton(text="✉️ Contact", url='https://sapbazar.com/more/contactus'))
+    markup.insert(InlineKeyboardButton(text='❓ Ask Question on SAP', callback_data='ask_question'))
     if str(admin_id) in admins:
         markup.insert(InlineKeyboardButton(text="ADMIN", callback_data='ADMIN'))
     return markup
@@ -144,3 +145,23 @@ async def remove_location_keys() -> InlineKeyboardMarkup:
     markup.insert(InlineKeyboardButton(text='Back', callback_data='admin_go_back'))
     return markup
 
+
+async def question_category_keys() -> InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup(row_width=2)
+    categories = questions_api.get_categories()
+    for category in categories:
+        markup.insert(InlineKeyboardButton(text=category, callback_data=f"QuestionCategory_{category}"))
+    return markup
+
+
+def question_review_keys() -> InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup(row_width=2)
+    markup.insert(InlineKeyboardButton(text='Create post', callback_data="questions_create"))
+    markup.insert(InlineKeyboardButton(text='Cancel', callback_data="questions_cancel"))
+    return markup
+
+
+def answer_question_keys(question_id) -> InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup()
+    markup.insert(InlineKeyboardButton(text='Respond', callback_data=f'AnswerQuestion_{question_id}'))
+    return markup

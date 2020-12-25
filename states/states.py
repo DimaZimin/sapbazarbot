@@ -1,4 +1,11 @@
-from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.dispatcher.filters.state import StatesGroup, State
+
+
+class JobCreation(StatesGroup):
+    job_name = State()
+    job_category = State()
+    job_location = State()
+    job_description = State()
 
 
 class Form(StatesGroup):
@@ -34,3 +41,18 @@ class MassMessage(StatesGroup):
 class GroupMessage(StatesGroup):
 
     message_processing = State()
+
+
+class StartQuestion(StatesGroup):
+
+    title_state = State()
+    content_state = State()
+    category_state = State()
+    email_state = State()
+    review = State()
+
+
+class AnswerQuestionState(StatesGroup):
+
+    answer_content = State()
+    answer_email = State()

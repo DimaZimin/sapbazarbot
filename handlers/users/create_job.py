@@ -6,7 +6,7 @@ from aiogram import types
 
 from data.config import PAYMENTS_PROVIDER_TOKEN
 from loader import dp, bot, db, mysql_db
-from middlewares.middleware import CreateJob
+from states.states import CreateJob
 from keyboards.inline.keyboard import job_post_callback, job_categories_keys, job_locations_keys, \
     confirmation_keys, invoice_callback, start_keys, payment_keys
 from filters.filters import JobCategory, JobLocation
@@ -160,7 +160,20 @@ async def process_job_location(call: CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         data["job_location"] = job_location
     logging.info(f'USER ID {job_location} LOCATION ADDED')
-    await call.message.edit_reply_markup()
+    await CreateJob.contact.set()
+    await bot.send_message(chat_id=user_id, text='Please provide your contact details. '
+                                                 'Type your name, email and mobile phone number.')
+
+
+@rate_limit(5)
+@dp.message_handler(state=CreateJob.contact)
+async def process_contact_data(message: Message, state: FSMContext):
+    user_id = message.chat.id
+    contact = message.text
+    logging.info(f'USER ID {user_id} SETS CONTACT: {contact} ')
+    await bot.send_chat_action(user_id, action='typing')
+    async with state.proxy() as data:
+        data["contact"] = contact
     await CreateJob.send_invoice.set()
     await bot.send_message(chat_id=user_id, text=f"Please, review your job posting\n\n"
                                                  f"<b>Your company name</b>:\n"
@@ -172,7 +185,9 @@ async def process_job_location(call: CallbackQuery, state: FSMContext):
                                                  f"<b>Category</b>:\n"
                                                  f"{data['job_category']}\n\n"
                                                  f"<b>Location</b>:\n"
-                                                 f"{data['job_location']}",
+                                                 f"{data['job_location']}\n\n"
+                                                 f"<b>Contact</b>:\n"
+                                                 f"{data['contact']}",
                            reply_markup=confirmation_keys(), parse_mode=types.ParseMode.HTML)
 
 
@@ -190,7 +205,10 @@ async def send_invoice(call: CallbackQuery, state: FSMContext):
     job_title = f"{company} - {data['job_name']}"
     category = data['job_category']
     location = data['job_location']
+    contact = data['contact']
     username = call.from_user.username
+    if not username:
+        username = data['contact']
     logging.info(f'USER ID {user_id} SENDING INVOICE')
     if db_status[0]['payable']:
         await bot.send_invoice(user_id,
@@ -212,9 +230,9 @@ async def send_invoice(call: CallbackQuery, state: FSMContext):
                                reply_markup=payment_keys()
                                )
     else:
-        mysql_description = f"Company: {company}<br> Location: {location}<br>{description}"
+        mysql_description = f"Company: {company}<br> Location: {location}<br>{description}<br>Contact: {contact}"
         mysql_db.insert_job(company, job_title, mysql_description, category, location)
-        await db.submit_order(user_id, company, job_title, description, category, location, False, username)
+        await db.submit_order(user_id, company, job_title, description, category, location, False, username, contact)
         await state.finish()
         logging.info(f'USER ID {user_id} JOB POSTED')
         await bot.send_message(chat_id=user_id, text='Success! Your job posting has been created!',
@@ -269,7 +287,7 @@ async def got_payment(message: types.Message, state: FSMContext):
     await db.submit_order(user_id, company, job_title, description,
                           category, location, True, username, email)
     await state.finish()
-    mysql_description = f"Company:{company}<br>Location: {location}<br>{description}"
+    mysql_description = f"Company:{company}<br>Location: {location}<br>{description}<br>Contact: {email}"
     mysql_db.insert_job(company, job_title, mysql_description, category, location)
     logging.info(f'USER ID {user_id} GOT PAYMENT')
     await bot.send_chat_action(user_id, action='typing')
