@@ -1,5 +1,8 @@
+from json.decoder import JSONDecodeError
+
 import requests
 import json
+
 
 class QuestionsAPI:
 
@@ -22,7 +25,9 @@ class QuestionsAPI:
         response = requests.request("GET", self.source, data=params)
         return response.text
 
-    async def create_question(self, user_email, title, content, category_id, tags):
+    async def create_question(self, user_email, title, content, category_id, tags, photo=None):
+        content = content if not photo else \
+            f'''<p>{content}</p><p><img alt="{title}" src=" {photo}" style="height:1280px; width:960px"></p>'''
         params = {
             "requestHeader": {
                 "serviceId": "111",
@@ -31,7 +36,7 @@ class QuestionsAPI:
             "requestBody": {
                 "userid": str(user_email),
                 "title": str(title),
-                "content": str(content),
+                "content": f"{content}",
                 "categoryid": str(category_id),
                 "tags": str(tags)
             }
@@ -101,7 +106,8 @@ class QuestionsAPI:
             }
         }
         response = requests.request("POST", self.source, headers=self.headers, json=params)
-        return response.text
+        post_id = response.json()['responseBody']['postid']
+        return str(post_id)
 
     async def get_question_title(self, question_id):
         params = {
@@ -113,6 +119,100 @@ class QuestionsAPI:
                 "questionid": str(question_id)
             }
         }
-        response = requests.request("GET", self.source, headers=self.headers, data=json.dumps(params))
-        question_title = response.json()['responseBody']['question'][0]['title']
+        response = requests.request("GET", self.source, headers=self.headers, data=json.dumps(params)).json()
+        response_body = response['responseBody']
+        try:
+            question = response_body['question'][0]
+            question_title = question['title']
+        except TypeError or JSONDecodeError:
+            question_title = 'Title is not available'
         return question_title
+
+    async def set_best_answer(self, question_id, answer_id, user_id):
+        params = {
+            "requestHeader": {
+                "serviceId": "111",
+                "interactionCode": "SETBESTANSWER"
+            },
+            "requestBody": {
+                "questionid": str(question_id),
+                "answerid": str(answer_id),
+                "userid": str(user_id)
+            }
+        }
+        response = requests.request("GET", self.source, headers=self.headers, data=json.dumps(params))
+        return response.json()
+
+    async def vote_answer(self, user_id, post_id, vote):
+        params = {
+            "requestHeader": {
+                "serviceId": "111",
+                "interactionCode": "VOTE"
+            },
+            "requestBody": {
+                "userid": str(user_id),
+                "postid": str(post_id),
+                "vote": str(vote)
+            }
+        }
+        response = requests.request("POST", self.source, headers=self.headers, json=params)
+        return response.text
+
+    def get_all_questions(self):
+        params = {
+            "requestHeader": {
+                "serviceId": "111",
+                "interactionCode": "GETQUESTIONS"
+            },
+            "requestBody": {
+                "userid": "2"
+            }
+        }
+        response = requests.request("GET", self.source, json=params)
+        # questions = json.dumps(response.json()['responseBody']['questions'], indent=2)
+        # questions = json.loads(questions)
+        # question_ids = [item['postid'] for item in questions]
+        return response.text
+
+    async def get_image_internal_link(self, image):
+        params = {
+            "requestHeader": {
+                "serviceId": "111",
+                "interactionCode": "SAVEIMAGE"
+            },
+            "requestBody": {
+                "base64data": f"data:image/jpeg;base64,{image}"
+            }
+        }
+        response = requests.request("POST", self.source, json=params)
+        link = response.json()['responseBody']['Url']
+        return link
+
+    async def get_user_questions(self, user_email):
+        params = {
+            "requestHeader": {
+                "serviceId": "111",
+                "interactionCode": "GETUSERQUESTIONS",
+                "user_id": f"{user_email}"
+            }
+        }
+        response = requests.request("POST", self.source, json=params)
+        try:
+            response_body = response.json()['responseBody']
+            questions = response_body['questions']
+        except JSONDecodeError:
+            questions = 'Error, no available questions created by provided user'
+        return questions
+
+    async def get_detailed_question(self, post_id):
+        params = {
+            "requestHeader": {
+                "serviceId": "111",
+                "interactionCode":
+                    "GETQUESTIONDETAIL"},
+            "requestBody": {
+                "questionid": f"{post_id}"
+            }
+        }
+        response = requests.request("GET", self.source, json=params)
+        return response.json()

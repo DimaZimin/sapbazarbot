@@ -3,6 +3,7 @@ import logging
 
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command, Text
+from aiogram.utils.exceptions import BotBlocked, RetryAfter
 from aiogram.types import CallbackQuery, ReplyKeyboardRemove, Message
 from filters.filters import SubscriptionCategories, SubscriptionLocations
 from keyboards.inline.keyboard import start_subscription, subscription_category_keys, \
@@ -132,7 +133,7 @@ async def contact_to_send(contact):
 
 async def job_task(wait_time):
     """
-    Main task function that runs every 'wait_time'. Entry parameter must be an integer and corresponds to seconds.
+    Main task function that runs every 'wait_time' value. Entry parameter must be an integer and corresponds to seconds.
     :param wait_time: integer - seconds
     """
     while True:
@@ -159,10 +160,13 @@ async def job_task(wait_time):
                                        parse_mode='HTML')
                 for user in users:
                     logging.info(f'MESSAGE SENT TO: {user["user_id"]}')
-                    await bot.send_message(user['user_id'], text=f"<a href='{ad_url}'>New job opening: "
-                                                                 f"{title}</a>"
-                                                                 f"\nContact: {await contact_to_send(contact)}",
-                                                                 parse_mode='HTML')
+                    try:
+                        await bot.send_message(user['user_id'], text=f"<a href='{ad_url}'>New job opening: "
+                                                                     f"{title}</a>"
+                                                                     f"\nContact: {await contact_to_send(contact)}",
+                                                                     parse_mode='HTML')
+                    except BotBlocked:
+                        pass
         json_manager.update_job_urls()
 
 
@@ -170,7 +174,7 @@ async def blog_task(wait_time):
     while True:
         await asyncio.sleep(wait_time)
         json_manager = parsers.JsonManager(json_db)
-        new_posts = json_manager.new_blog_post()
+        new_posts = json_manager.new_blog_post('blog_urls')
         logging.info(f"PERFORMING BLOG SCRAPING...\nNEW POSTS: {new_posts}")
         if new_posts:
             logging.info("ITERATION OVER BLOG ARTICLES")
@@ -180,13 +184,29 @@ async def blog_task(wait_time):
                 logging.info(f"CATEGORY: {category}\nURL: {post_url}\n")
                 subscribers = await db.get_blog_subscription_users(f"{category}")
                 logging.info(f"SUBSCRIBERS: {subscribers}")
-                logging.info(f"SENDING BLOG MESSAGE TO CHANNEL")
-                await bot.send_message(chat_id='@sapbazar', text=f'<a href="{post_url}"> Hey! We got'
-                                                                 f' a new post here! Check this out.</a>',
-                                       parse_mode='HTML')
                 for subscriber in subscribers:
                     logging.info(f"SENDING URL TO: {subscriber}")
-                    await bot.send_message(subscriber['user_id'], text=f'<a href="{post_url}"> Hey! We got'
-                                                                       f' a new post here! Check this out.</a>',
-                                           parse_mode='HTML')
-        json_manager.update_blog_urls()
+                    try:
+                        await bot.send_message(subscriber['user_id'], text=f'<a href="{post_url}"> Hey! We got'
+                                                                           f' a new post here! Check this out.</a>',
+                                               parse_mode='HTML')
+                    except BotBlocked or RetryAfter:
+                        pass
+        json_manager.update_blog_urls('blog_urls')
+
+
+async def blog_task_for_channel(wait_time):
+    await asyncio.sleep(wait_time)
+    json_manager = parsers.JsonManager(json_db)
+    new_posts = json_manager.new_blog_post('blog_channel')
+
+    if len(new_posts) >= 5:
+        text_to_send = "\n\n".join([
+            f'<a href="{post[0]}">{post[2]}</a> in {post[1]}' for post in new_posts
+        ])
+        try:
+            await bot.send_message(chat_id='@sapbazar', text=f'New posts:\n\n{text_to_send}',
+                                   parse_mode='HTML')
+        except RetryAfter:
+            pass
+        json_manager.update_blog_urls('blog_channel')

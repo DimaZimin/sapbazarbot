@@ -22,7 +22,8 @@ def start_keys(admin_id):
     markup.insert(InlineKeyboardButton(text="✅ Subscribe", callback_data=start_subscription.new(action='subscribe')))
     markup.insert(InlineKeyboardButton(text="💼 Post a Job", callback_data=job_post_callback.new(posting='start')))
     markup.insert(InlineKeyboardButton(text="✉️ Contact", url='https://sapbazar.com/more/contactus'))
-    markup.insert(InlineKeyboardButton(text='❓ Ask Question on SAP', callback_data='ask_question'))
+    markup.insert(InlineKeyboardButton(text='❓ Ask SAP GURU', callback_data='ask_question'))
+    markup.insert(InlineKeyboardButton(text='🙋 My questions', callback_data='my_questions'))
     if str(admin_id) in admins:
         markup.insert(InlineKeyboardButton(text="ADMIN", callback_data='ADMIN'))
     return markup
@@ -165,3 +166,19 @@ def answer_question_keys(question_id) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
     markup.insert(InlineKeyboardButton(text='Respond', callback_data=f'AnswerQuestion_{question_id}'))
     return markup
+
+
+def feedback_answer_keys(answer_id) -> InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup()
+    markup.insert(InlineKeyboardButton(text='Best Answer 🙏', callback_data=f'feedback_thebest_{answer_id}'))
+    markup.insert(InlineKeyboardButton(text='Helpful 👍', callback_data=f'feedback_helpful_{answer_id}'))
+    markup.insert(InlineKeyboardButton(text='Unhelpful 👎', callback_data=f'feedback_unhelpful_{answer_id}'))
+    return markup
+
+
+def select_question_keys() -> InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup()
+    markup.insert(InlineKeyboardButton(text='Select question', callback_data=f'select_detail_question'))
+    markup.insert(InlineKeyboardButton(text='Main menu', callback_data=f'dont_select_detail_question'))
+    return markup
+

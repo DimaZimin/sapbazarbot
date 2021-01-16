@@ -87,8 +87,8 @@ class Database:
     async def create_table_questions(self):
         sql = """
         CREATE TABLE IF NOT EXISTS questions (
-        user_id INT NOT NULL REFERENCES Users (user_id),
-        post_id VARCHAR (255),
+        user_id INT NOT NULL,
+        post_id VARCHAR (255) UNIQUE,
         user_mail VARCHAR (255), 
         external_user_id VARCHAR (255)
         );
@@ -96,7 +96,13 @@ class Database:
         await self.pool.execute(sql)
 
     async def create_table_answers(self):
-        pass
+        sql = """
+        CREATE TABLE IF NOT EXISTS answers (
+        user_id INT NOT NULL,
+        question_id VARCHAR(255) NOT NULL REFERENCES questions (post_id) UNIQUE,
+        post_id VARCHAR(255);
+        """
+        await self.pool.execute(sql)
 
     async def payable_post(self, payable='True'):
         sql = f"""
@@ -297,3 +303,40 @@ class Database:
         VALUES($1, $2, $3, $4)
         """
         return await self.pool.execute(sql, user_id, post_id, user_email, external_user_id)
+
+    async def create_answer(self, user_id, user_mail, question_id, post_id):
+        sql = """
+        INSERT INTO answers (user_id, user_mail, question_id, post_id)
+        VALUES($1, $2, $3, $4)
+        """
+        return await self.pool.execute(sql, user_id, user_mail, question_id, post_id)
+
+    async def get_user_mail_by_answer_id(self, answer_id):
+        sql = f"""
+        SELECT user_mail FROM answers WHERE post_id = '{answer_id}'
+        """
+        return await self.pool.fetch(sql)
+
+    async def get_question_id_by_answer_id(self, answer_id):
+        sql = f"""
+        SELECT question_id FROM answers WHERE post_id = '{answer_id}'
+        """
+        return await self.pool.fetch(sql)
+
+    async def get_all_questions_by_user(self, user_id):
+        sql = f"""
+        SELECT post_id FROM questions WHERE user_id = {user_id}
+        """
+        return await self.pool.fetch(sql)
+
+    async def get_user_question_mail(self, user_id):
+        sql = f"""
+        SELECT user_mail FROM questions WHERE user_id = {user_id}
+        """
+        return await self.pool.fetch(sql)
+
+    async def get_mail_by_user_id(self, user_id):
+        sql = f"""
+        SELECT email FROM users WHERE user_id = {user_id} 
+        """
+        return await self.pool.fetchval(sql)
