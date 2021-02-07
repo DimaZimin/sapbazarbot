@@ -10,9 +10,7 @@ from loader import dp, bot
 # This is the text message that bot sends after /start command has been activated.
 from utils.misc import rate_limit
 
-START_TEXT = "You can subscribe to new SAP job openings via SAP Bazar BOT. " \
-             "Sign up to receive new job alerts straight to this chat. " \
-             "You can select all the categories you are interested in by pressing 'Subscribe'"
+START_TEXT = "Welcome to SAPGURU. SAPGURU is sap support bot.\n- To subscribe to latest SAP Blogs, articles and answering of questions push the button 'Subscribe'\n- Need help of sap experts push the button 'Raise a ticket'"
 
 
 @rate_limit(5, 'start')

@@ -11,8 +11,8 @@ class Database:
         self.pool: asyncpg.pool.Pool = loop.run_until_complete(
             asyncpg.create_pool(
                 database='sap_bazar',
-                user=config.PGUSER,
-                password='9Bg7r7cfeb',
+                user='dima',
+                password='1QAZ1qazxsw2',
                 host='db'
             )
         )
@@ -30,16 +30,6 @@ class Database:
         );
         """
 
-        await self.pool.execute(sql)
-
-    async def create_table_subscription_locations(self):
-        sql = """
-            CREATE TABLE IF NOT EXISTS subscription_locations (
-            user_id INT NOT NULL REFERENCES Users (user_id),
-            location VARCHAR(255),
-            UNIQUE (user_id, location)
-            );
-        """
         await self.pool.execute(sql)
 
     async def create_table_categories(self):
@@ -80,7 +70,9 @@ class Database:
         job_description VARCHAR(2555),	
         job_category VARCHAR(255),
         job_location VARCHAR(255),
-        paid BOOLEAN NOT NULL
+        paid BOOLEAN NOT NULL,
+        username VARCHAR(255),
+        email VARCHAR(255)
         );
         """
         await self.pool.execute(sql)
@@ -90,6 +82,28 @@ class Database:
         CREATE TABLE IF NOT EXISTS settings (
         payable BOOLEAN NOT NULL,
         posting_fees INT NOT NULL
+        );
+        """
+        await self.pool.execute(sql)
+
+    async def create_table_questions(self):
+        sql = """
+        CREATE TABLE IF NOT EXISTS questions (
+        user_id INT NOT NULL,
+        post_id VARCHAR (255) UNIQUE,
+        user_mail VARCHAR (255), 
+        external_user_id VARCHAR (255)
+        );
+        """
+        await self.pool.execute(sql)
+
+    async def create_table_answers(self):
+        sql = """
+        CREATE TABLE IF NOT EXISTS answers (
+        user_id INT NOT NULL,
+        question_id VARCHAR(255) NOT NULL REFERENCES questions (post_id) UNIQUE,
+        post_id VARCHAR(255),
+        user_mail VARCHAR(255)
         );
         """
         await self.pool.execute(sql)
@@ -124,11 +138,9 @@ class Database:
 
     async def select_user(self, location, category):
         sql = f"""
-        SELECT subscriptions.user_id, subscription_locations.location, category 
-        FROM Users 
-        LEFT JOIN Subscriptions ON users.user_id = subscriptions.user_id
-        LEFT JOIN subscription_locations on users.user_id = subscription_locations.user_id
-        WHERE subscription_locations.location = '{location}' 
+        SELECT subscriptions.user_id, location, category 
+        FROM Users LEFT JOIN Subscriptions ON users.user_id = subscriptions.user_id
+        WHERE users.location = '{location}' 
         AND subscriptions.category = '{category}'
         """
         return await self.pool.fetch(sql)
@@ -211,15 +223,6 @@ class Database:
         except UniqueViolationError:
             pass
 
-    async def add_user_location(self, user_id, location):
-        sql = f"""
-        INSERT INTO subscription_locations (user_id, location) VALUES ($1, $2)
-        """
-        try:
-            return await self.pool.execute(sql, user_id, location)
-        except UniqueViolationError:
-            pass
-
     async def delete_data(self, table):
         sql = f"""
         DELETE FROM {table}
@@ -229,9 +232,7 @@ class Database:
     async def delete_user_subscription(self, user_id):
         sql = f"""
         DELETE FROM subscriptions
-        WHERE user_id = {user_id};
-        DELETE FROM subscription_locations 
-        WHERE user_id = {user_id};
+        WHERE user_id = {user_id}
         """
         return await self.pool.execute(sql)
 
@@ -241,6 +242,12 @@ class Database:
         FROM users LEFT JOIN subscriptions ON users.user_id = subscriptions.user_id
         WHERE users.blog_subscription = true AND subscriptions.category = '{category}'
         ORDER by users.user_id
+        """
+        return await self.pool.fetch(sql)
+
+    async def get_category_subscribers(self, category):
+        sql = f"""
+        SELECT user_id FROM subscriptions WHERE category = '{category}'
         """
         return await self.pool.fetch(sql)
 
@@ -293,3 +300,47 @@ class Database:
         SELECT username FROM job_posting_orders WHERE job_name LIKE '{job_title}%'
         """
         return await self.pool.fetch(sql)
+
+    async def create_question(self, user_id, post_id, user_email, external_user_id):
+        sql = f"""
+        INSERT INTO questions (user_id, post_id, user_mail, external_user_id) 
+        VALUES($1, $2, $3, $4)
+        """
+        return await self.pool.execute(sql, user_id, post_id, user_email, external_user_id)
+
+    async def create_answer(self, user_id, user_mail, question_id, post_id):
+        sql = """
+        INSERT INTO answers (user_id, user_mail, question_id, post_id)
+        VALUES($1, $2, $3, $4)
+        """
+        return await self.pool.execute(sql, user_id, user_mail, question_id, post_id)
+
+    async def get_user_mail_by_answer_id(self, answer_id):
+        sql = f"""
+        SELECT user_mail FROM answers WHERE post_id = '{answer_id}'
+        """
+        return await self.pool.fetch(sql)
+
+    async def get_question_id_by_answer_id(self, answer_id):
+        sql = f"""
+        SELECT question_id FROM answers WHERE post_id = '{answer_id}'
+        """
+        return await self.pool.fetch(sql)
+
+    async def get_all_questions_by_user(self, user_id):
+        sql = f"""
+        SELECT post_id FROM questions WHERE user_id = {user_id}
+        """
+        return await self.pool.fetch(sql)
+
+    async def get_user_question_mail(self, user_id):
+        sql = f"""
+        SELECT user_mail FROM questions WHERE user_id = {user_id}
+        """
+        return await self.pool.fetch(sql)
+
+    async def get_mail_by_user_id(self, user_id):
+        sql = f"""
+        SELECT email FROM users WHERE user_id = {user_id} 
+        """
+        return await self.pool.fetchval(sql)

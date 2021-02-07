@@ -13,6 +13,7 @@ class CreateJob(StatesGroup):
     job_category_add = State()
     job_location = State()
     job_location_add = State()
+    contact = State()
     send_invoice = State()
     checkout = State()
     payment_paid = State()

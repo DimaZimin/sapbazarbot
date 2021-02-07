@@ -3,10 +3,11 @@ import logging
 
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message
+from aiogram.utils.exceptions import BotBlocked, Unauthorized
 
 from loader import dp, bot, db
 from keyboards.inline.keyboard import admin_start_keys, remove_categories_keys, remove_location_keys, start_keys
-from middlewares.middleware import Admin, MassMessage, GroupMessage
+from states.states import Admin, MassMessage, GroupMessage
 from filters.filters import IsCategory, IsLocation
 
 
@@ -188,7 +189,10 @@ async def send_mass_message(message: Message, state: FSMContext):
     user_id = message.chat.id
     subscribers = [user['user_id'] for user in await db.fetch_value('user_id', 'users')]
     for user in subscribers:
-        await bot.send_message(user, text=message.text)
+        try:
+            await bot.send_message(user, text=message.text)
+        except Exception as err:
+            logging.info(f"ERROR: {err}")
     await state.finish()
     await bot.send_message(user_id, text='Main admin panel', reply_markup=admin_start_keys())
 

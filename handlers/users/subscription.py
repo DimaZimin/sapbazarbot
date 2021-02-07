@@ -2,14 +2,14 @@ import asyncio
 import logging
 
 from aiogram.dispatcher import FSMContext
-from aiogram.utils.exceptions import BotBlocked, RetryAfter
 from aiogram.dispatcher.filters import Command, Text
+from aiogram.utils.exceptions import BotBlocked, RetryAfter
 from aiogram.types import CallbackQuery, ReplyKeyboardRemove, Message
 from filters.filters import SubscriptionCategories, SubscriptionLocations
 from keyboards.inline.keyboard import start_subscription, subscription_category_keys, \
     subscription_locations_keys, unsubscribe_key, blog_sub
 
-from middlewares.middleware import Form
+from states.states import Form
 from keyboards.inline.keyboard import start_keys
 from loader import dp, db, bot, json_db
 from utils.parsers import parsers
@@ -73,28 +73,18 @@ async def set_location(call: CallbackQuery, state: FSMContext):
     Callback query catches name of location. Locations are stored in keyboard.py LOCATIONS variable.
     """
     await call.answer(cache_time=60)
-    user_id = call.from_user.id
-    user_locations = await db.get_value('subscription_locations', column='location', where_col='user_id', value=user_id)
-    location = call.data
     callback_data = (call.message.text, call.message.chat.id)
-    if location != 'location_skip':
-        logging.info(f'call = {callback_data[0]}\tchat id: {callback_data[1]}')
-        await db.add_user_location(user_id=user_id, location=location)
-        logging.info(f'LOCATION ADDED: {location} FOR USER ID: {user_id}')
-        await call.message.edit_reply_markup()
-        await call.message.answer(f'{location} has been added. Please, choose another location or press `Next`',
-                                  reply_markup=await subscription_locations_keys())
-    elif location == 'location_skip' and not user_locations:
-        await call.message.edit_reply_markup()
-        await call.message.answer('You have not chosen any location. '
-                                  'Please select at least one location and proceed by pressing the `Next` button',
-                                  reply_markup=await subscription_locations_keys())
-    else:
-        await state.finish()
-        await call.message.edit_reply_markup()
-        await call.message.answer(f'{location} location has been selected. '
-                                  f'Do you want to subscribe to the SAP blog?',
-                                  reply_markup=blog_sub())
+    logging.info(f'call = {callback_data[0]}\tchat id: {callback_data[1]}')
+    user_id = int(call.from_user.id)
+    location = call.data
+    await db.update_user(user_id=user_id, location=location)
+    logging.info(f'LOCATION UPDATED: {location} FOR USER ID: {user_id}')
+    await state.finish()
+    await call.message.edit_reply_markup()
+    await call.message.answer(f'{location} location has been selected. '
+                              f'Do you want to subscribe to the SAP blog?',
+                              reply_markup=blog_sub())
+
 
 @rate_limit(5)
 @dp.callback_query_handler(text=['yes', 'no'])
@@ -110,7 +100,7 @@ async def subscribe_on_blog(call: CallbackQuery):
     await db.update_user(user_id, job_subscription='True')
     await call.message.edit_reply_markup()
     logging.info(f"USER {user_id} SUBSCRIBED FOR JOB ALERT")
-    await call.message.answer(f'You have successfully subscribed to job alert!',
+    await call.message.answer(f'You have successfully subscribed for job alert!',
                               reply_markup=unsubscribe_key())
 
 
@@ -143,7 +133,7 @@ async def contact_to_send(contact):
 
 async def job_task(wait_time):
     """
-    Main task function that runs every 'wait_time'. Entry parameter must be an integer and corresponds to seconds.
+    Main task function that runs every 'wait_time' value. Entry parameter must be an integer and corresponds to seconds.
     :param wait_time: integer - seconds
     """
     while True:
@@ -172,11 +162,11 @@ async def job_task(wait_time):
                     logging.info(f'MESSAGE SENT TO: {user["user_id"]}')
                     try:
                         await bot.send_message(user['user_id'], text=f"<a href='{ad_url}'>New job opening: "
-                                                                 f"{title}</a>"
-                                                                 f"\nContact: {await contact_to_send(contact)}",
-                                                                 parse_mode='HTML')
+                                                                     f"{title}</a>"
+                                                                     f"\nContact: {await contact_to_send(contact)}",
+                                                                     parse_mode='HTML')
                     except BotBlocked:
-                        continue
+                        pass
         json_manager.update_job_urls()
 
 
@@ -184,26 +174,41 @@ async def blog_task(wait_time):
     while True:
         await asyncio.sleep(wait_time)
         json_manager = parsers.JsonManager(json_db)
-        new_posts = json_manager.new_blog_post()
+        new_posts = json_manager.new_blog_post('blog_urls')        
         logging.info(f"PERFORMING BLOG SCRAPING...\nNEW POSTS: {new_posts}")
         if new_posts:
             logging.info("ITERATION OVER BLOG ARTICLES")
-            posts = "\n".join([url[0] for url in new_posts])
-            await bot.send_message(chat_id='@sapbazar', text=f'<a href="{posts}"> Hey! We got'
-                                                                 f' a new post here! Check this out.</a>',parse_mode='HTML')
             for post in new_posts:
                 category = post[1]
                 post_url = post[0]
                 logging.info(f"CATEGORY: {category}\nURL: {post_url}\n")
                 subscribers = await db.get_blog_subscription_users(f"{category}")
                 logging.info(f"SUBSCRIBERS: {subscribers}")
-                logging.info(f"SENDING BLOG MESSAGE TO CHANNEL")
                 for subscriber in subscribers:
                     logging.info(f"SENDING URL TO: {subscriber}")
                     try:
                         await bot.send_message(subscriber['user_id'], text=f'<a href="{post_url}"> Hey! We got'
-                                                                       f' a new post here! Check this out.</a>',
+                                                                           f' a new post here! Check this out.</a>',
                                                parse_mode='HTML')
                     except BotBlocked or RetryAfter:
-                        continue
-        json_manager.update_blog_urls()
+                        pass
+        json_manager.update_blog_urls('blog_urls')
+
+
+async def blog_task_for_channel(wait_time):
+    while True:
+        await asyncio.sleep(wait_time)
+        json_manager = parsers.JsonManager(json_db)
+        new_posts = json_manager.new_blog_post('blog_channel')
+        logging.info(f"BLOG TASK EXECUTING. NEW POSTS {new_posts}")
+        if len(new_posts) >= 5:
+            logging.info(f"BLOG TASK SENDING LINKS TO GROUP")
+            text_to_send = "\n\n".join([
+                f'<a href="{post[0]}">{post[2]}</a> in {post[1]}' for post in new_posts
+            ])
+            try:
+                await bot.send_message(chat_id='@sapbazar', text=f'New posts:\n\n{text_to_send}',
+                                       parse_mode='HTML')
+            except RetryAfter:
+                pass
+            json_manager.update_blog_urls('blog_channel')

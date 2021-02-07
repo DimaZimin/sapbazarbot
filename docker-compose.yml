@@ -5,7 +5,7 @@ services:
     container_name: database
     image: postgres
     environment:
-      POSTGRES_PASSWORD: 9Bg7r7cfeb
+      POSTGRES_PASSWORD: QAZ1qazzaq1
       POSTGRES_USER: dima
       POSTGRES_DB: sap_bazar
     restart: always

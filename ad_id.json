@@ -1,155 +1,347 @@
 {
     "job_urls": [
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-mmsd-at-teamidea-russia/1157",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-pp-at-teamidea-russia/1156",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-mm-at-freelance-remote/1155",
-        "https://jobs.sapbazar.com/job/%d0%b1%d0%b8%d0%b7%d0%bd%d0%b5%d1%81-%d0%b0%d0%bd%d0%b0%d0%bb%d0%b8%d1%82%d0%b8%d0%ba-bi-at-ibs-russia/1154",
-        "https://jobs.sapbazar.com/job/freelance-sap-s4-hana-%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-at-admin-company-russia/1153",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-sd-at-teamidea-russia/1152",
-        "https://jobs.sapbazar.com/job/%d1%80%d1%83%d0%ba%d0%be%d0%b2%d0%be%d0%b4%d0%b8%d1%82%d0%b5%d0%bb%d1%8c-%d0%bf%d1%80%d0%be%d0%b5%d0%ba%d1%82%d0%b0-%d0%bf%d0%be-%d0%bc%d0%be%d0%b4%d0%b5%d1%80%d0%bd%d0%b8%d0%b7%d0%b0%d1%86%d0%b8-russia/1151",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-pm-at-ibs-russia/1150",
-        "https://jobs.sapbazar.com/job/pwc-senior-consultant-sap-pp-at-admin-company-moscow/1149",
-        "https://jobs.sapbazar.com/job/pwc-senior-consultant-sap-fi-at-admin-company-moscow/1148",
-        "https://jobs.sapbazar.com/job/pwc-senior-consultant-sap-bw-at-admin-company-moscow/1147",
-        "https://jobs.sapbazar.com/job/ey-russia-%d1%81%d1%82%d0%b0%d1%80%d1%88%d0%b8%d0%b9-%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-bwbo-at-admin-company-russia/1146",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-bw-at-teamidea-russia/1145",
-        "https://jobs.sapbazar.com/job/%d0%ba%d1%83%d1%80%d1%81-%d0%bf%d0%be-sap-ui5-%d1%82%d0%be%d0%bb%d1%8c%d0%ba%d0%be-%d1%81%d0%b5%d0%b3%d0%be%d0%b4%d0%bd%d1%8f-%d0%ba%d1%83%d1%80%d1%81-%d0%bf%d0%be-%d1%80%d0%b0%d0%b7%d1%80%d0%b0-remote/1144",
-        "https://jobs.sapbazar.com/job/erg-%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82%d1%8b-%d0%bc%d0%bc-abap-bw-at-admin-company-kazakhstan/1143",
-        "https://jobs.sapbazar.com/job/%d1%80%d1%83%d0%ba%d0%be%d0%b2%d0%be%d0%b4%d0%b8%d1%82%d0%b5%d0%bb%d1%8c-%d0%bd%d0%b0%d0%bf%d1%80%d0%b0%d0%b2%d0%bb%d0%b5%d0%bd%d0%b8%d1%8f-sap-ewm-at-freelance-saint-petersburg/1142",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-co-at-%d0%be%d0%be%d0%be-%d0%b8%d0%ba-%d1%81%d0%b8%d0%b1%d0%b8%d0%bd%d1%82%d0%b5%d0%ba-russia/1137",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-fi-fm-at-freelance-saint-petersburg/1136",
-        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-lo-le-wmsdwms-at-teamidea-russia/1135"
+        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-mm-%d0%b8-sd-k2-k4-at-teamidea-russia/1204",
+        "https://jobs.sapbazar.com/job/abap-%d1%80%d0%b0%d0%b7%d1%80%d0%b0%d0%b1%d0%be%d1%82%d1%87%d0%b8%d0%ba-at-freelance-russia/1203",
+        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-rcm-%d0%b2%d0%bd%d0%b5%d0%b4%d1%80%d0%b5%d0%bd%d0%b8%d0%b5-at-teamidea-russia/1202",
+        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-ewm-k2-k4-at-teamidea-russia/1201",
+        "https://jobs.sapbazar.com/job/test-test-at-admin-company-italy/1200",
+        "https://jobs.sapbazar.com/job/ramax-group-%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-bwbi-at-admin-company-russia/1199",
+        "https://jobs.sapbazar.com/job/%d0%ba%d1%80%d1%83%d0%bf%d0%bd%d0%b0%d1%8f-%d0%bf%d1%80%d0%be%d0%bc%d1%8b%d1%88%d0%bb%d0%b5%d0%bd%d0%bd%d0%b0%d1%8f-%d0%ba%d0%be%d0%bc%d0%bf%d0%b0%d0%bd%d0%b8%d1%8f-%d0%ba%d0%be%d0%bd%d1%81%d1%83-russia/1198",
+        "https://jobs.sapbazar.com/job/%d1%80%d0%b0%d0%b7%d1%80%d0%b0%d0%b1%d0%be%d1%82%d1%87%d0%b8%d0%ba-sap-abap-at-teamidea-russia/1197",
+        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-mm-at-freelance-remote/1196",
+        "https://jobs.sapbazar.com/job/%d0%b0%d1%80%d1%85%d0%b8%d1%82%d0%b5%d0%ba%d1%82%d0%be%d1%80-sap-ewm-at-freelance-remote/1195",
+        "https://jobs.sapbazar.com/job/sap-%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-pp-at-team-force-moscow/1194",
+        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-mm-k2-k4-at-teamidea-russia/1192",
+        "https://jobs.sapbazar.com/job/pwc-freelance-consultant-at-admin-company-moscow/1191",
+        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap%c2%a0-pp-team-lead-at-teamidea-russia/1190",
+        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-fi-at-%d1%81%d0%b5%d0%b2%d0%b5%d1%80%d1%81%d1%82%d0%b0%d0%bb%d1%8c-russia/1189",
+        "https://jobs.sapbazar.com/job/%d1%81%d1%82%d0%b0%d1%80%d1%88%d0%b8%d0%b9-%d1%81%d0%bf%d0%b5%d1%86%d0%b8%d0%b0%d0%bb%d0%b8%d1%81%d1%82-sap-fi-at-%d1%81%d0%b5%d0%b2%d0%b5%d1%80%d1%81%d1%82%d0%b0%d0%bb%d1%8c-russia/1188",
+        "https://jobs.sapbazar.com/job/%d0%ba%d0%be%d0%bd%d1%81%d1%83%d0%bb%d1%8c%d1%82%d0%b0%d0%bd%d1%82-sap-co-at-teamidea-russia/1187",
+        "https://jobs.sapbazar.com/job/abap-%d1%80%d0%b0%d0%b7%d1%80%d0%b0%d0%b1%d0%be%d1%82%d1%87%d0%b8%d0%ba-at-freelance-remote/1186"
     ],
     "job_new": [],
-    "blog_urls": [
+   "blog_urls": [
         [
-            "https://sapbazar.com/articles/item/4711-sap-s4hana-reviews-and-what-if-scenarios-with-eppm",
-            "SAP S/4HANA"
+            "https://sapbazar.com/articles/item/5178-get-the-sap-user-id-which-been-deleted-by-email-address",
+            "SAP ABAP",
+            "Get the SAP user ID which been deleted by email address"
         ],
         [
-            "https://sapbazar.com/articles/item/4710-how-to-generate-a-notification-when-any-business-partnervendorcustomer-is-changed-in-sap-s4hana",
-            "SAP S/4HANA"
+            "https://sapbazar.com/articles/item/5177-technical-details-hana-licensing",
+            "SAP HANA",
+            "Technical details \u2013 HANA licensing"
         ],
         [
-            "https://sapbazar.com/articles/item/4709-manufacturing-and-supply-chain-in-sap-s4hana-cloud-2011",
-            "SAP S/4HANA"
+            "https://sapbazar.com/articles/item/5176-how-adopting-the-sap-qualified-partner-packaged-solution-strategy-helped-sap-partner-savic-rise-and-their-customers-shine",
+            "SAP S/4HANA",
+            "How Adopting the SAP-Qualified Partner-Packaged Solution Strategy Helped SAP Partner SAVIC Rise and their Customers Shine"
         ],
         [
-            "https://sapbazar.com/articles/item/4705-sap-hana-cloud-smart-data-access-for-google-bigquery",
-            "SAP HANA"
+            "https://sapbazar.com/articles/item/5174-qa-from-teched-session-iis102-sap-fiori-launchpad-whats-hot-and-whats-new",
+            "SAP S/4HANA",
+            "Q&A from TechEd Session IIS102: SAP Fiori Launchpad \u2013 What\u2019s Hot and What\u2019s New"
         ],
         [
-            "https://sapbazar.com/articles/item/4706-read-material-basic-data-text-long-text-without-using-function-module-readtext-in-cds-views",
-            "SAP ABAP"
+            "https://sapbazar.com/articles/item/5175-integration-of-sap-master-data-governance-mdg-with-sap-ariba-supplier-and-lifecycle-performance-slp",
+            "SAP S/4HANA",
+            "Integration of SAP Master Data Governance (MDG) with SAP Ariba Supplier and Lifecycle Performance (SLP)"
         ],
         [
-            "https://sapbazar.com/articles/item/4707-gw-service-for-inbound-delivery-creationvl31n-in-sap-s4-hana",
-            "SAP ABAP"
+            "https://sapbazar.com/articles/item/5173-sap-successfactors-employee-centralecpsap-hr-no-show-functionality",
+            "SAP success factors",
+            "SAP SuccessFactors Employee Central/ECP/SAP HR No show functionality"
         ],
         [
-            "https://sapbazar.com/articles/item/4704-ec-time-and-attendance-new-features-h2-2020",
-            "SAP success factors"
+            "https://sapbazar.com/articles/item/5172-additive-model-time-series-analysis-using-python-machine-learning-client-for-sap-hana",
+            "SAP HANA",
+            "Additive Model Time-series Analysis using Python Machine Learning Client for SAP HANA"
         ],
         [
-            "https://sapbazar.com/articles/item/4703-sap-s4hana-system-upgrade-using-zero-downtime-option-of-sum-poc-customer-case",
-            "SAP S/4HANA"
+            "https://sapbazar.com/articles/item/5171-consignment-order-in-sap-s4hana-tm-based-upon-advanced-shipping-notifications",
+            "SAP S/4HANA",
+            "Consignment Order in SAP S/4HANA TM based upon Advanced Shipping Notifications"
         ],
         [
-            "https://sapbazar.com/articles/item/4702-sap-central-finance-co-secondary-postings",
-            "SAP S/4HANA"
+            "https://sapbazar.com/articles/item/5169-sap-on-azure-what-are-the-options",
+            "SAP HANA",
+            "SAP on Azure: What are the Options?"
         ],
         [
-            "https://sapbazar.com/articles/item/4701-separate-data-classes-in-unit-tests",
-            "SAP ABAP"
+            "https://sapbazar.com/articles/item/5168-send-idoc-from-cloud-platform-integration-to-ecc-inbound-part2",
+            "SAP ABAP",
+            "Send IDOC from Cloud Platform Integration to ECC (inbound Part2)"
         ],
         [
-            "https://sapbazar.com/articles/item/4708-sap-s4hana-authorizations",
-            "SAP HANA"
+            "https://sapbazar.com/articles/item/5167-whats-new-sap-hana-cloud-jan-2021-qrc-04",
+            "SAP HANA",
+            "What\u2019s New \u2013 SAP HANA Cloud Jan 2021 (QRC 04)"
         ],
         [
-            "https://sapbazar.com/articles/item/4699-sap-s4hana-authorizations",
-            "SAP S/4HANA"
+            "https://sapbazar.com/articles/item/5170-whats-new-sap-hana-cloud-jan-2021-qrc-4",
+            "SAP HANA",
+            "What\u2019s New \u2013 SAP HANA Cloud Jan 2021 (QRC 4)"
         ],
         [
-            "https://sapbazar.com/articles/item/4700-sap-fiori-for-sap-s4hana-best-practices-for-structuring-spaces-and-pages",
-            "SAP S/4HANA"
+            "https://sapbazar.com/articles/item/5166-f4-help-for-custom-fields-created-using-custom-fields-logic-inapp-extensibility",
+            "SAP S/4HANA",
+            "F4 Help for custom fields created using Custom Fields & Logic \u2013 InApp Extensibility"
         ],
         [
-            "https://sapbazar.com/articles/item/4698-multi-model-in-hanaml-26-for-python-setup",
-            "SAP HANA"
+            "https://sapbazar.com/articles/item/5165-fresh-releases-of-the-sap-cloud-sdk-for-java-and-javascript-in-2021",
+            "SAP HANA",
+            "Fresh releases of the SAP Cloud SDK for Java and JavaScript in 2021"
         ],
         [
-            "https://sapbazar.com/articles/item/4696-brf-settings-for-purchase-orders",
-            "SAP S/4HANA"
+            "https://sapbazar.com/articles/item/5163-restrict-editing-leave-requests-created-by-an-admin",
+            "SAP success factors",
+            "Restrict Editing Leave Requests Created by an Admin"
         ],
         [
-            "https://sapbazar.com/articles/item/4695-rehire-with-new-employment-and-rectifying-an-incorrect-hire-action",
-            "SAP success factors"
+            "https://sapbazar.com/articles/item/5162-enterprise-mobility-sap-app-development",
+            "SAP HANA",
+            "Enterprise Mobility @ SAP \u2013 App Development"
         ],
         [
-            "https://sapbazar.com/articles/item/4697-sap-architecture-whats-different-in-azure",
-            "SAP S/4HANA"
+            "https://sapbazar.com/articles/item/5164-sap-document-compliance-entrada-manual-e-notificaoes-ao-fornecedor-disponiveis-no-edocument-cockpit",
+            "SAP S/4HANA",
+            "SAP Document Compliance: entrada manual e notifica\u00e7\u00f5es ao fornecedor dispon\u00edveis no eDocument Cockpit"
         ],
         [
-            "https://sapbazar.com/articles/item/4694-whats-new-in-sap-s4hana-cloud-2011-release-technology-topics",
-            "SAP S/4HANA"
+            "https://sapbazar.com/articles/item/5159-free-trial-sap-hana-cloud-hana",
+            "SAP HANA",
+            "Free Trial\u3067\u306f\u3058\u3081\u308b SAP HANA Cloud : HANA\u30a4\u30f3\u30b9\u30bf\u30f3\u30b9\u306e\u4f5c\u6210 (\u66f4\u65b0\u7248)"
         ],
         [
-            "https://sapbazar.com/articles/item/4691-validation-of-disabled-fields-in-dynamic-group-filters-in-sap-successfactors",
-            "SAP success factors"
+            "https://sapbazar.com/articles/item/5160-video-sap-analytics-cloud-predictive-scenarios-planning",
+            "SAP Security",
+            "Video: SAP Analytics Cloud Predictive Scenarios & Planning"
         ],
         [
-            "https://sapbazar.com/articles/item/4690-use-sles-152-to-automate-sap-hana-ha-maintenance",
-            "SAP HANA"
+            "https://sapbazar.com/articles/item/5158-sap-financial-product-subledger-overview",
+            "SAP S/4HANA",
+            "SAP Financial product subledger overview"
         ],
         [
-            "https://sapbazar.com/articles/item/4692-user-experience-ux-sessions-at-sap-teched-2020",
-            "SAP S/4HANA"
+            "https://sapbazar.com/articles/item/5157-tips-for-bank-account-processing-with-bank-reconciliation-accounts-in-sap-s4hana-2020",
+            "SAP S/4HANA",
+            "Tips For Bank Account Processing with Bank Reconciliation Accounts In SAP S/4HANA 2020"
         ],
         [
-            "https://sapbazar.com/articles/item/4693-asset-accounting-what-is-new-in-s4hana-2020",
-            "SAP S/4HANA"
+            "https://sapbazar.com/articles/item/5155-bank-validation-in-payment-information-portlet-in-sap-employee-central",
+            "SAP success factors",
+            "Bank Validation in Payment Information Portlet in SAP Employee Central"
         ],
         [
-            "https://sapbazar.com/articles/item/4686-cts-is-beautiful",
-            "SAP ABAP"
+            "https://sapbazar.com/articles/item/5156-bank-validation-in-payment-information-portlet-in-sap-successfactors-employee-central",
+            "SAP success factors",
+            "Bank Validation in Payment Information Portlet in SAP SuccessFactors Employee Central"
         ],
         [
-            "https://sapbazar.com/articles/item/4688-maintaining-business-configuration-in-sap-cloud-platform-master-data-for-business-partners",
-            "SAP S/4HANA"
+            "https://sapbazar.com/articles/item/5153-replication-of-cost-center-manager-from-sap-erp-controlling-to-employee-central",
+            "SAP success factors",
+            "Replication of Cost Center Manager from SAP ERP Controlling to Employee Central"
         ],
         [
-            "https://sapbazar.com/articles/item/4687-changing-work-item-initiator-in-a-workflow",
-            "SAP ABAP"
+            "https://sapbazar.com/articles/item/5154-using-side-by-side-extensibility-to-process-down-payments-for-sales-orders",
+            "SAP S/4HANA",
+            "Using Side-by-Side Extensibility to Process Down Payments for Sales Orders"
         ],
         [
-            "https://sapbazar.com/articles/item/4689-sap-s4hana-conversion-road-map-high-level-sap-basis",
-            "SAP S/4HANA"
+            "https://sapbazar.com/sap-podcasts/sap-basis-podcasts/item/5161-dsag-technologietage-sap-patchday-sap-help-tipp-rz10-update-vom-13012021",
+            "SAP Basis Podcast",
+            "DSAG Technologietage, SAP Patchday, SAP Help Tipp | RZ10 Update vom 13.01.2021"
         ],
         [
-            "https://sapbazar.com/articles/item/4685-tap-into-your-network-using-python",
-            "SAP HANA"
+            "https://sapbazar.com/articles/item/5151-planned-release-of-sap-hana-20-sps-06",
+            "SAP HANA",
+            "Planned Release of SAP HANA 2.0 SPS 06"
         ],
         [
-            "https://sapbazar.com/articles/item/4684-how-to-check-the-maximum-length-of-a-function-import-parameter-in-segw-based-odata-services-the-old-way",
-            "SAP ABAP"
+            "https://sapbazar.com/articles/item/5150-update-future-sapui5-versions-will-no-longer-support-microsofts-legacy-browsers",
+            "SAP UI5",
+            "Update: Future SAPUI5 versions will no longer support Microsoft\u2019s legacy browsers"
         ],
         [
-            "https://sapbazar.com/articles/item/4682-key-takeaways-from-2020-steel-success-strategy",
-            "SAP S/4HANA"
+            "https://sapbazar.com/articles/item/5149-blog-series-sap-s4-hana-supply-chain-for-transportation-management-06-integrated-consignment-process-and-consolidation-opportunities",
+            "SAP S/4HANA",
+            "Blog Series \u2013 SAP S/4 HANA Supply Chain for Transportation Management \u2013 06 \u2013 Integrated consignment process and consolidation opportunities"
         ],
         [
-            "https://sapbazar.com/articles/item/4683-highlights-for-product-compliance-in-sap-s4hana-2020-part-1-product-marketability-and-chemical-compliance",
-            "SAP S/4HANA"
+            "https://sapbazar.com/articles/item/5147-error-handling-and-reprocessing-options-for-sap-successfactors-employee-central-inbound-integrations",
+            "SAP success factors",
+            "Error handling and Reprocessing options for SAP SuccessFactors Employee Central Inbound Integrations"
         ],
         [
-            "https://sapbazar.com/articles/item/4681-inside-sap-s4hana-anniversary-celebrating-one-year-of-product-expertise-by-podcast",
-            "SAP S/4HANA"
+            "https://sapbazar.com/articles/item/5148-error-handling-and-reprocessing-options-for-sap-successfactors-employee-central-custom-inbound-integrations",
+            "SAP success factors",
+            "Error handling and Reprocessing options for SAP SuccessFactors Employee Central custom Inbound Integrations"
         ],
         [
-            "https://sapbazar.com/articles/item/4679-a-brief-history-of-openui5-and-sapui5",
-            "SAP UI5"
+            "https://sapbazar.com/articles/item/5146-sap-analytics-cloud-supported-s4hana-objects-and-how-to-find-them",
+            "SAP S/4HANA",
+            "SAP Analytics Cloud \u2013 Supported S/4HANA objects and how to find them"
         ]
     ],
-    "blog_new": []
+    "blog_channel": [
+        [
+            "https://sapbazar.com/articles/item/5178-get-the-sap-user-id-which-been-deleted-by-email-address",
+            "SAP ABAP",
+            "Get the SAP user ID which been deleted by email address"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5177-technical-details-hana-licensing",
+            "SAP HANA",
+            "Technical details \u2013 HANA licensing"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5176-how-adopting-the-sap-qualified-partner-packaged-solution-strategy-helped-sap-partner-savic-rise-and-their-customers-shine",
+            "SAP S/4HANA",
+            "How Adopting the SAP-Qualified Partner-Packaged Solution Strategy Helped SAP Partner SAVIC Rise and their Customers Shine"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5174-qa-from-teched-session-iis102-sap-fiori-launchpad-whats-hot-and-whats-new",
+            "SAP S/4HANA",
+            "Q&A from TechEd Session IIS102: SAP Fiori Launchpad \u2013 What\u2019s Hot and What\u2019s New"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5175-integration-of-sap-master-data-governance-mdg-with-sap-ariba-supplier-and-lifecycle-performance-slp",
+            "SAP S/4HANA",
+            "Integration of SAP Master Data Governance (MDG) with SAP Ariba Supplier and Lifecycle Performance (SLP)"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5173-sap-successfactors-employee-centralecpsap-hr-no-show-functionality",
+            "SAP success factors",
+            "SAP SuccessFactors Employee Central/ECP/SAP HR No show functionality"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5172-additive-model-time-series-analysis-using-python-machine-learning-client-for-sap-hana",
+            "SAP HANA",
+            "Additive Model Time-series Analysis using Python Machine Learning Client for SAP HANA"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5171-consignment-order-in-sap-s4hana-tm-based-upon-advanced-shipping-notifications",
+            "SAP S/4HANA",
+            "Consignment Order in SAP S/4HANA TM based upon Advanced Shipping Notifications"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5169-sap-on-azure-what-are-the-options",
+            "SAP HANA",
+            "SAP on Azure: What are the Options?"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5168-send-idoc-from-cloud-platform-integration-to-ecc-inbound-part2",
+            "SAP ABAP",
+            "Send IDOC from Cloud Platform Integration to ECC (inbound Part2)"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5167-whats-new-sap-hana-cloud-jan-2021-qrc-04",
+            "SAP HANA",
+            "What\u2019s New \u2013 SAP HANA Cloud Jan 2021 (QRC 04)"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5170-whats-new-sap-hana-cloud-jan-2021-qrc-4",
+            "SAP HANA",
+            "What\u2019s New \u2013 SAP HANA Cloud Jan 2021 (QRC 4)"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5166-f4-help-for-custom-fields-created-using-custom-fields-logic-inapp-extensibility",
+            "SAP S/4HANA",
+            "F4 Help for custom fields created using Custom Fields & Logic \u2013 InApp Extensibility"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5165-fresh-releases-of-the-sap-cloud-sdk-for-java-and-javascript-in-2021",
+            "SAP HANA",
+            "Fresh releases of the SAP Cloud SDK for Java and JavaScript in 2021"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5163-restrict-editing-leave-requests-created-by-an-admin",
+            "SAP success factors",
+            "Restrict Editing Leave Requests Created by an Admin"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5162-enterprise-mobility-sap-app-development",
+            "SAP HANA",
+            "Enterprise Mobility @ SAP \u2013 App Development"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5164-sap-document-compliance-entrada-manual-e-notificaoes-ao-fornecedor-disponiveis-no-edocument-cockpit",
+            "SAP S/4HANA",
+            "SAP Document Compliance: entrada manual e notifica\u00e7\u00f5es ao fornecedor dispon\u00edveis no eDocument Cockpit"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5159-free-trial-sap-hana-cloud-hana",
+            "SAP HANA",
+            "Free Trial\u3067\u306f\u3058\u3081\u308b SAP HANA Cloud : HANA\u30a4\u30f3\u30b9\u30bf\u30f3\u30b9\u306e\u4f5c\u6210 (\u66f4\u65b0\u7248)"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5160-video-sap-analytics-cloud-predictive-scenarios-planning",
+            "SAP Security",
+            "Video: SAP Analytics Cloud Predictive Scenarios & Planning"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5158-sap-financial-product-subledger-overview",
+            "SAP S/4HANA",
+            "SAP Financial product subledger overview"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5157-tips-for-bank-account-processing-with-bank-reconciliation-accounts-in-sap-s4hana-2020",
+            "SAP S/4HANA",
+            "Tips For Bank Account Processing with Bank Reconciliation Accounts In SAP S/4HANA 2020"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5155-bank-validation-in-payment-information-portlet-in-sap-employee-central",
+            "SAP success factors",
+            "Bank Validation in Payment Information Portlet in SAP Employee Central"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5156-bank-validation-in-payment-information-portlet-in-sap-successfactors-employee-central",
+            "SAP success factors",
+            "Bank Validation in Payment Information Portlet in SAP SuccessFactors Employee Central"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5153-replication-of-cost-center-manager-from-sap-erp-controlling-to-employee-central",
+            "SAP success factors",
+            "Replication of Cost Center Manager from SAP ERP Controlling to Employee Central"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5154-using-side-by-side-extensibility-to-process-down-payments-for-sales-orders",
+            "SAP S/4HANA",
+            "Using Side-by-Side Extensibility to Process Down Payments for Sales Orders"
+        ],
+        [
+            "https://sapbazar.com/sap-podcasts/sap-basis-podcasts/item/5161-dsag-technologietage-sap-patchday-sap-help-tipp-rz10-update-vom-13012021",
+            "SAP Basis Podcast",
+            "DSAG Technologietage, SAP Patchday, SAP Help Tipp | RZ10 Update vom 13.01.2021"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5151-planned-release-of-sap-hana-20-sps-06",
+            "SAP HANA",
+            "Planned Release of SAP HANA 2.0 SPS 06"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5150-update-future-sapui5-versions-will-no-longer-support-microsofts-legacy-browsers",
+            "SAP UI5",
+            "Update: Future SAPUI5 versions will no longer support Microsoft\u2019s legacy browsers"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5149-blog-series-sap-s4-hana-supply-chain-for-transportation-management-06-integrated-consignment-process-and-consolidation-opportunities",
+            "SAP S/4HANA",
+            "Blog Series \u2013 SAP S/4 HANA Supply Chain for Transportation Management \u2013 06 \u2013 Integrated consignment process and consolidation opportunities"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5147-error-handling-and-reprocessing-options-for-sap-successfactors-employee-central-inbound-integrations",
+            "SAP success factors",
+            "Error handling and Reprocessing options for SAP SuccessFactors Employee Central Inbound Integrations"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5148-error-handling-and-reprocessing-options-for-sap-successfactors-employee-central-custom-inbound-integrations",
+            "SAP success factors",
+            "Error handling and Reprocessing options for SAP SuccessFactors Employee Central custom Inbound Integrations"
+        ],
+        [
+            "https://sapbazar.com/articles/item/5146-sap-analytics-cloud-supported-s4hana-objects-and-how-to-find-them",
+            "SAP S/4HANA",
+            "SAP Analytics Cloud \u2013 Supported S/4HANA objects and how to find them"
+        ]
+    ]    
 }

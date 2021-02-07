@@ -29,7 +29,7 @@ class XMLParser:
 
 
 class JsonManager:
-    """JSON Context Manager operates on json file"""
+    """JSON Manager operates on json file"""
 
     def __init__(self, file):
         self.file = file
@@ -41,7 +41,11 @@ class JsonManager:
             json.dump(data, json_file, indent=4)
 
     def new_ads(self):
-        return [url for url in self.xml_parser.get_urls() if url not in self.get_values('job_urls')]
+        try:
+            urls = [url for url in self.xml_parser.get_urls() if url not in self.get_values('job_urls')]
+            return urls
+        except KeyError:
+            self.write_json(data={"job_urls": []})
 
     def get_values(self, key: str):
         with open(self.file, 'r') as json_file:
@@ -51,18 +55,16 @@ class JsonManager:
     def update_job_urls(self):
         with open(self.file, 'r') as json_file:
             data = json.load(json_file)
-            data['job_new'] = self.new_ads()
             data['job_urls'] = self.xml_parser.get_urls()
             self.write_json(data)
 
-    def new_blog_post(self):
-        return [post for post in self.blog_parser.blog_posts() if post not in self.get_values('blog_urls')]
+    def new_blog_post(self, json_keys):
+        return [post for post in self.blog_parser.blog_posts() if post not in self.get_values(json_keys)]
 
-    def update_blog_urls(self):
+    def update_blog_urls(self, json_keys):
         with open(self.file, 'r') as json_file:
             data = json.load(json_file)
-            data['blog_new'] = self.new_blog_post()
-            data['blog_urls'] = self.blog_parser.blog_posts()
+            data[json_keys] = self.blog_parser.blog_posts()
             self.write_json(data)
 
 
@@ -73,10 +75,7 @@ class HTMLParser:
         self.source = requests.get(self.url).text
         self.soup = BeautifulSoup(self.source, 'html.parser')
         self.prettysoup = self.soup.prettify()
-        try:
-            self.category_tag = self.soup.find('h2').text
-        except AttributeError:
-            self.category_tag = 'SAP S/4HANA'
+        self.category_tag = self.soup.find('h2').text
 
     def category(self):
         return self.category_tag.split('>')[1].strip()
@@ -98,11 +97,15 @@ class BlogParser(HTMLParser):
         return [("https://sapbazar.com" + BeautifulSoup(str(link), 'html.parser').a['href'])
                 for link in self.blog_post_links]
 
+    def get_titles(self):
+        return [BeautifulSoup(str(link), 'html.parser').get_text()
+                for link in self.blog_post_links]
+
     def get_categories(self):
         return [self.check_str(BeautifulSoup(str(string), 'html.parser').text) for string in self.blog_category]
 
     def blog_posts(self):
-        return [[link, category] for link, category in zip(self.get_urls(), self.get_categories())]
+        return [[link, category, title] for link, category, title in zip(self.get_urls(), self.get_categories(), self.get_titles())]
 
     @staticmethod
     def check_str(string):
