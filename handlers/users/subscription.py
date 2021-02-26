@@ -3,11 +3,11 @@ import logging
 
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command, Text
-from aiogram.utils.exceptions import BotBlocked, RetryAfter
+from aiogram.utils.exceptions import BotBlocked, RetryAfter, UserDeactivated
 from aiogram.types import CallbackQuery, ReplyKeyboardRemove, Message
 from filters.filters import SubscriptionCategories, SubscriptionLocations
 from keyboards.inline.keyboard import start_subscription, subscription_category_keys, \
-    subscription_locations_keys, unsubscribe_key, blog_sub
+    subscription_locations_keys, unsubscribe_key, blog_sub, start_keys_unsubscribe
 
 from states.states import Form
 from keyboards.inline.keyboard import start_keys
@@ -101,21 +101,20 @@ async def subscribe_on_blog(call: CallbackQuery):
     await call.message.edit_reply_markup()
     logging.info(f"USER {user_id} SUBSCRIBED FOR JOB ALERT")
     await call.message.answer(f'You have successfully subscribed for job alert!',
-                              reply_markup=unsubscribe_key())
+                              reply_markup=start_keys_unsubscribe(user_id))
 
 
 @rate_limit(5)
-@dp.message_handler(Text(contains='Unsubscribe'))
-async def unsubscribe(message: Message):
-    """
-    Unsubscribe button function
-    """
-    user_id = message.from_user.id
+@dp.callback_query_handler(text='unsubscribe')
+async def unsubscribe_from_job_alert(call: CallbackQuery):
+    await call.answer(cache_time=60)
+    user_id = call.from_user.id
     await db.delete_user_subscription(user_id)
     await db.update_user(user_id, job_subscription='False')
     logging.info(f'USER ID: {user_id} UNSUBSCRIBED FROM JOB ALERT')
-    await message.answer("You have successfully unsubscribed from job alert", reply_markup=ReplyKeyboardRemove())
-    await message.answer("Thank you for choosing our service", reply_markup=start_keys(user_id))
+    await call.message.edit_reply_markup()
+    await bot.send_message(user_id, "You have successfully unsubscribed from job alert.\n"
+                                    "Thank you for choosing our service", reply_markup=start_keys(user_id))
 
 
 @rate_limit(5)
@@ -140,7 +139,7 @@ async def job_task(wait_time):
         await asyncio.sleep(wait_time)
         logging.info(f'SCHEDULED TASK IS EXECUTING...')
         json_manager = parsers.JsonManager(json_db)
-        new_ads = json_manager.get_values('job_new')
+        new_ads = json_manager.new_ads()
         logging.info(f'NEW ADS: {new_ads}')
         if new_ads:
             logging.info('ITERATION OVER ADS...')
@@ -190,23 +189,24 @@ async def blog_task(wait_time):
                         await bot.send_message(subscriber['user_id'], text=f'<a href="{post_url}"> Hey! We got'
                                                                            f' a new post here! Check this out.</a>',
                                                parse_mode='HTML')
-                    except BotBlocked or RetryAfter:
+                    except BotBlocked or RetryAfter or UserDeactivated:
                         pass
-        json_manager.update_blog_urls('blog_urls')
+            json_manager.update_blog_urls('blog_urls')
 
 
 async def blog_task_for_channel(wait_time):
-    await asyncio.sleep(wait_time)
-    json_manager = parsers.JsonManager(json_db)
-    new_posts = json_manager.new_blog_post('blog_channel')
+    while True:
+        await asyncio.sleep(wait_time)
+        json_manager = parsers.JsonManager(json_db)
+        new_posts = json_manager.new_blog_post('blog_channel')
 
-    if len(new_posts) >= 5:
-        text_to_send = "\n\n".join([
-            f'<a href="{post[0]}">{post[2]}</a> in {post[1]}' for post in new_posts
-        ])
-        try:
-            await bot.send_message(chat_id='@sapbazar', text=f'New posts:\n\n{text_to_send}',
-                                   parse_mode='HTML')
-        except RetryAfter:
-            pass
-        json_manager.update_blog_urls('blog_channel')
+        if len(new_posts) >= 5:
+            text_to_send = "\n\n".join([
+                f'<a href="{post[0]}">{post[2]}</a> in {post[1]}' for post in new_posts
+            ])
+            try:
+                await bot.send_message(chat_id='@sapbazar', text=f'New posts:\n\n{text_to_send}',
+                                       parse_mode='HTML')
+            except RetryAfter:
+                pass
+            json_manager.update_blog_urls('blog_channel')

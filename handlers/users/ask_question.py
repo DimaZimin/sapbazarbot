@@ -8,7 +8,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import CallbackQuery, Message
-
+from aiogram.utils.exceptions import BotBlocked
 from data.config import BOT_TOKEN
 from filters.filters import QuestionCategories
 from keyboards.inline.keyboard import question_category_keys, question_review_keys, start_keys, \
@@ -174,13 +174,15 @@ async def create_question(call: CallbackQuery, state: FSMContext):
         users = await db.get_category_subscribers(await check_if_string_has_sap(data['category']))
         users = [user['user_id'] for user in users if user['user_id'] != user_id]
         for user in users:
-            await bot.send_message(user, f"Hello. Some user needs an advice on SAP. "
-                                         f"You might be the one who can help.\n\n"
-                                         f"<b>Title:</b>\n{data['title']}\n\n<b>Question:</b>\n{data['content']}\n"
-                                         f"{data['image_url'] if data['image_url'] else ''}",
-                                   parse_mode='HTML',
-                                   reply_markup=answer_question_keys(question_id))
-
+            try:
+                await bot.send_message(user, f"Hello. Some user needs an advice on SAP. "
+                                             f"You might be the one who can help.\n\n"
+                                             f"<b>Title:</b>\n{data['title']}\n\n<b>Question:</b>\n{data['content']}\n"
+                                             f"{data['image_url'] if data['image_url'] else ''}",
+                                       parse_mode='HTML',
+                                       reply_markup=answer_question_keys(question_id))
+            except BotBlocked:
+                pass
     else:
         logging.info(f'QUESTION MODE: USER ID {user_id} CANCELS QUESTION CREATION')
         await state.finish()
@@ -229,10 +231,13 @@ async def process_answer_email(message: Message, state: FSMContext):
     await db.create_answer(user_id=user_id, user_mail=email, question_id=question_id, post_id=answer_id)
     await state.finish()
     question_title = await questions_api.get_question_title(question_id)
-    await bot.send_message(question_starter_user_id, text=f"Hi, we have got an answer for your question: "
-                                                          f"{question_title}\n"
-                                                          f"<b>Answer:</b>\n{content}",
-                           parse_mode='HTML', reply_markup=feedback_answer_keys(answer_id))
+    try:
+        await bot.send_message(question_starter_user_id, text=f"Hi, we have got an answer for your question: "
+                                                              f"{question_title}\n"
+                                                              f"<b>Answer:</b>\n{content}",
+                               parse_mode='HTML', reply_markup=feedback_answer_keys(answer_id))
+    except BotBlocked:
+        pass
     await bot.send_message(user_id, 'Your answer has been posted! Thank you.', reply_markup=start_keys(user_id))
 
 
@@ -261,11 +266,3 @@ async def give_feedback_helpful(call: CallbackQuery):
                                reply_markup=start_keys(user_id))
         await call.message.edit_reply_markup()
         await questions_api.set_best_answer(question_id=question_id, answer_id=answer_id, user_id=user_mail)
-
-
-
-
-
-
-
-

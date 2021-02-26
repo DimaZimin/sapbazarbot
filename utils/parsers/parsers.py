@@ -41,7 +41,11 @@ class JsonManager:
             json.dump(data, json_file, indent=4)
 
     def new_ads(self):
-        return [url for url in self.xml_parser.get_urls() if url not in self.get_values('job_urls')]
+        try:
+            urls = [url for url in self.xml_parser.get_urls() if url not in self.get_values('job_urls')]
+            return urls
+        except KeyError:
+            self.write_json(data={"job_urls": []})
 
     def get_values(self, key: str):
         with open(self.file, 'r') as json_file:
@@ -51,7 +55,6 @@ class JsonManager:
     def update_job_urls(self):
         with open(self.file, 'r') as json_file:
             data = json.load(json_file)
-            data['job_new'] = self.new_ads()
             data['job_urls'] = self.xml_parser.get_urls()
             self.write_json(data)
 
@@ -70,10 +73,12 @@ class HTMLParser:
     def __init__(self, url):
         self.url = url
         self.source = requests.get(self.url).text
-        print(requests.get(self.url).text)
         self.soup = BeautifulSoup(self.source, 'html.parser')
         self.prettysoup = self.soup.prettify()
-        self.category_tag = self.soup.find('h2').text
+        try:
+            self.category_tag = self.soup.find('h2').text
+        except AttributeError:
+            self.category_tag = 'SAP ABAP'
 
     def category(self):
         return self.category_tag.split('>')[1].strip()

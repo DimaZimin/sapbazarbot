@@ -21,9 +21,26 @@ def start_keys(admin_id):
     markup = InlineKeyboardMarkup(row_width=2)
     markup.insert(InlineKeyboardButton(text="✅ Subscribe", callback_data=start_subscription.new(action='subscribe')))
     markup.insert(InlineKeyboardButton(text="💼 Post a Job", callback_data=job_post_callback.new(posting='start')))
-    markup.insert(InlineKeyboardButton(text="✉️ Contact", url='https://sapbazar.com/more/contactus'))
+    markup.insert(InlineKeyboardButton(text="✉️ Contact", url='telegram.me/gurusap'))
     markup.insert(InlineKeyboardButton(text='❓ Ask SAP GURU', callback_data='ask_question'))
     markup.insert(InlineKeyboardButton(text='🙋 My questions', callback_data='my_questions'))
+    markup.insert(InlineKeyboardButton(text='See all questions', callback_data='all_questions'))
+    if str(admin_id) in admins:
+        markup.insert(InlineKeyboardButton(text="ADMIN", callback_data='ADMIN'))
+    return markup
+
+
+def start_keys_unsubscribe(admin_id):
+    """
+    Inline keyboard that pops up after activating /start command
+    """
+    markup = InlineKeyboardMarkup(row_width=2)
+    markup.insert(InlineKeyboardButton(text="❌ Unsubscribe", callback_data="unsubscribe"))
+    markup.insert(InlineKeyboardButton(text="💼 Post a Job", callback_data=job_post_callback.new(posting='start')))
+    markup.insert(InlineKeyboardButton(text="✉️ Contact", url='telegram.me/gurusap'))
+    markup.insert(InlineKeyboardButton(text='❓ Ask SAP GURU', callback_data='ask_question'))
+    markup.insert(InlineKeyboardButton(text='🙋 My questions', callback_data='my_questions'))
+    markup.insert(InlineKeyboardButton(text='See all questions', callback_data='all_questions'))
     if str(admin_id) in admins:
         markup.insert(InlineKeyboardButton(text="ADMIN", callback_data='ADMIN'))
     return markup
@@ -165,6 +182,7 @@ def question_review_keys() -> InlineKeyboardMarkup:
 def answer_question_keys(question_id) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
     markup.insert(InlineKeyboardButton(text='Respond', callback_data=f'AnswerQuestion_{question_id}'))
+    markup.insert(InlineKeyboardButton(text='Cancel', callback_data='finish_state_answers'))
     return markup
 
 
@@ -180,5 +198,12 @@ def select_question_keys() -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
     markup.insert(InlineKeyboardButton(text='Select question', callback_data=f'select_detail_question'))
     markup.insert(InlineKeyboardButton(text='Main menu', callback_data=f'dont_select_detail_question'))
+    return markup
+
+
+def get_questions_keys() -> InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup()
+    markup.insert(InlineKeyboardButton(text='Answered questions', callback_data='answered_questions'))
+    markup.insert(InlineKeyboardButton(text='Unanswered questions', callback_data='unanswered_questions'))
     return markup
 

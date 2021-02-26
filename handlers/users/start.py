@@ -5,7 +5,7 @@ from aiogram import types
 from aiogram.utils.exceptions import MessageIdentifierNotSpecified
 
 from keyboards.inline.keyboard import start_keys
-from loader import dp, bot
+from loader import dp, bot, db
 
 # This is the text message that bot sends after /start command has been activated.
 from utils.misc import rate_limit
@@ -26,5 +26,8 @@ async def start(message: types.Message):
     except MessageIdentifierNotSpecified:
         pass
     logging.info(f'USER MESSAGE: {message.text}\tUSER ID: {message.chat.id} BEGINS SUBSCRIPTION')
-    await message.answer(text=f"Hello, {message.from_user.full_name}!\n" + START_TEXT,
+    name = message.from_user.full_name
+    user_id = message.from_user.id
+    await db.add_user(user_id, name)
+    await message.answer(text=f"Hello, {name}!\n" + START_TEXT,
                          reply_markup=start_keys(message.chat.id))

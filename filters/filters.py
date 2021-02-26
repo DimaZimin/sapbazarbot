@@ -47,6 +47,7 @@ class QuestionCategories(BoundFilter):
         locations = questions_api.get_categories()
         return call.data.split('QuestionCategory_')[1] in locations
 
+
 class AnswerQuestionID(BoundFilter):
     async def check(self, call: types.CallbackQuery) -> bool:
         return call.data.split('AnswerQuestion_')[0]

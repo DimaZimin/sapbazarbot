@@ -169,10 +169,8 @@ class QuestionsAPI:
             }
         }
         response = requests.request("GET", self.source, json=params)
-        # questions = json.dumps(response.json()['responseBody']['questions'], indent=2)
-        # questions = json.loads(questions)
-        # question_ids = [item['postid'] for item in questions]
-        return response.text
+        questions = response.json()['responseBody']['questions']
+        return questions
 
     async def get_image_internal_link(self, image):
         params = {
@@ -200,8 +198,8 @@ class QuestionsAPI:
         try:
             response_body = response.json()['responseBody']
             questions = response_body['questions']
-        except JSONDecodeError:
-            questions = 'Error, no available questions created by provided user'
+        except JSONDecodeError or KeyError:
+            questions = None
         return questions
 
     async def get_detailed_question(self, post_id):
@@ -215,4 +213,38 @@ class QuestionsAPI:
             }
         }
         response = requests.request("GET", self.source, json=params)
-        return response.json()
+        question = response.json().get('responseBody')
+        return question
+
+    async def get_answers(self):
+        params = {
+            "requestHeader": {
+                "serviceId": "111",
+                "interactionCode": "GETANSWERS"
+            }
+        }
+
+        response = requests.request("GET", self.source, json=params)
+        answers = response.json()['responseBody']['answers']
+        return answers
+
+    async def is_new_answers(self, file):
+        current = await self.get_answers()
+        previous = self.read_json(file)
+        if previous[0] == current[0]:
+            return False
+        if len(previous) < len(current):
+            difference = len(current) - len(previous)
+            self.write_json(file, current)
+            return current[:difference]
+        return False
+
+    @staticmethod
+    def write_json(file, data):
+        with open(file, "w") as f:
+            json.dump(data, f, indent=4)
+
+    @staticmethod
+    def read_json(file):
+        with open(file, "r") as f:
+            return json.load(f)

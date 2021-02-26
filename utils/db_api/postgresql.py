@@ -70,7 +70,9 @@ class Database:
         job_description VARCHAR(2555),	
         job_category VARCHAR(255),
         job_location VARCHAR(255),
-        paid BOOLEAN NOT NULL
+        paid BOOLEAN NOT NULL,
+        username VARCHAR(255),
+        email VARCHAR(255)
         );
         """
         await self.pool.execute(sql)
@@ -100,7 +102,9 @@ class Database:
         CREATE TABLE IF NOT EXISTS answers (
         user_id INT NOT NULL,
         question_id VARCHAR(255) NOT NULL REFERENCES questions (post_id) UNIQUE,
-        post_id VARCHAR(255);
+        post_id VARCHAR(255),
+        user_mail VARCHAR(255)
+        );
         """
         await self.pool.execute(sql)
 
@@ -340,3 +344,10 @@ class Database:
         SELECT email FROM users WHERE user_id = {user_id} 
         """
         return await self.pool.fetchval(sql)
+
+    async def select_user_by_post_id(self, post_id):
+        sql = f"""
+        SELECT user_id FROM questions WHERE post_id = $1
+        """
+        return await self.pool.fetchval(sql, post_id)
+
