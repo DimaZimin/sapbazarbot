@@ -3,7 +3,7 @@ import logging
 
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command, Text
-from aiogram.utils.exceptions import BotBlocked, RetryAfter
+from aiogram.utils.exceptions import BotBlocked, RetryAfter, UserDeactivated
 from aiogram.types import CallbackQuery, ReplyKeyboardRemove, Message
 from filters.filters import SubscriptionCategories, SubscriptionLocations
 from keyboards.inline.keyboard import start_subscription, subscription_category_keys, \
@@ -165,7 +165,7 @@ async def job_task(wait_time):
                                                                      f"{title}</a>"
                                                                      f"\nContact: {await contact_to_send(contact)}",
                                                                      parse_mode='HTML')
-                    except BotBlocked:
+                    except BotBlocked or UserDeactivated:
                         pass
         json_manager.update_job_urls()
 
@@ -190,7 +190,7 @@ async def blog_task(wait_time):
                         await bot.send_message(subscriber['user_id'], text=f'<a href="{post_url}"> Hey! We got'
                                                                            f' a new post here! Check this out.</a>',
                                                parse_mode='HTML')
-                    except BotBlocked or RetryAfter:
+                    except BotBlocked or RetryAfter or UserDeactivated:
                         pass
         json_manager.update_blog_urls('blog_urls')
 

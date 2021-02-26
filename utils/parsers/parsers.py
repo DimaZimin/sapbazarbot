@@ -75,7 +75,10 @@ class HTMLParser:
         self.source = requests.get(self.url).text
         self.soup = BeautifulSoup(self.source, 'html.parser')
         self.prettysoup = self.soup.prettify()
-        self.category_tag = self.soup.find('h2').text
+        try:
+            self.category_tag = self.soup.find('h2').text
+        except AttributeError:
+            self.category_tag = 'SAP ABAP'
 
     def category(self):
         return self.category_tag.split('>')[1].strip()
