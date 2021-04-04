@@ -69,3 +69,11 @@ class MyQuestionsState(StatesGroup):
     get_answers_state = State()
 
 
+class AllQuestionsState(StatesGroup):
+
+    select_category_state = State()
+    select_question_state = State()
+    answer_questions_state = State()
+    answer_content_state = State()
+    answer_email_state = State()
+

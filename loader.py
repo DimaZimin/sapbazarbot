@@ -1,15 +1,12 @@
 import asyncio
-import os
-from datetime import datetime
-
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-
 from data import config
 from utils.db_api.postgresql import Database
 from utils.db_api.sapbazarsql import SAPBazarSQL
 from utils.parsers.api_questions import QuestionsAPI
-    
+import os
+
 bot = Bot(token=config.BOT_TOKEN, parse_mode=types.ParseMode.HTML)
 storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
@@ -19,3 +16,4 @@ loop = asyncio.get_event_loop()
 db = Database(loop)
 mysql_db = SAPBazarSQL()
 questions_api = QuestionsAPI()
+json_answers = os.getcwd() + "/answers.json"

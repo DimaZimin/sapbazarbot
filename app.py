@@ -1,3 +1,4 @@
+from handlers.users.my_questions import check_new_answers_task
 
 
 async def on_startup(dp):
@@ -18,5 +19,5 @@ if __name__ == '__main__':
     dp.loop.create_task(job_task(2500))
     dp.loop.create_task(blog_task(3000))
     dp.loop.create_task(blog_task_for_channel(3500))
+    dp.loop.create_task(check_new_answers_task(7000))
     executor.start_polling(dp, on_startup=on_startup)
-

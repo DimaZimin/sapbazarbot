@@ -11,8 +11,8 @@ class Database:
         self.pool: asyncpg.pool.Pool = loop.run_until_complete(
             asyncpg.create_pool(
                 database='sap_bazar',
-                user='dima',
-                password='1QAZ1qazxsw2',
+                user=config.PGUSER,
+                password=config.PGPASSWORD,
                 host='db'
             )
         )
@@ -306,14 +306,14 @@ class Database:
         INSERT INTO questions (user_id, post_id, user_mail, external_user_id) 
         VALUES($1, $2, $3, $4)
         """
-        return await self.pool.execute(sql, user_id, post_id, user_email, external_user_id)
+        return await self.pool.execute(sql, user_id, post_id, str(user_email), external_user_id)
 
     async def create_answer(self, user_id, user_mail, question_id, post_id):
         sql = """
         INSERT INTO answers (user_id, user_mail, question_id, post_id)
         VALUES($1, $2, $3, $4)
         """
-        return await self.pool.execute(sql, user_id, user_mail, question_id, post_id)
+        return await self.pool.execute(sql, user_id, str(user_mail), question_id, post_id)
 
     async def get_user_mail_by_answer_id(self, answer_id):
         sql = f"""
@@ -344,3 +344,10 @@ class Database:
         SELECT email FROM users WHERE user_id = {user_id} 
         """
         return await self.pool.fetchval(sql)
+
+    async def select_user_by_post_id(self, post_id):
+        sql = f"""
+        SELECT user_id FROM questions WHERE post_id = $1
+        """
+        return await self.pool.fetchval(sql, post_id)
+

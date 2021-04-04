@@ -34,5 +34,3 @@ class MassMessage(StatesGroup):
 class GroupMessage(StatesGroup):
 
     message_processing = State()
-
-
