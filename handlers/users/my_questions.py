@@ -134,6 +134,7 @@ async def answer_question_cancel(call: CallbackQuery, state: FSMContext):
     await call.answer(cache_time=60)
     user_id = call.from_user.id
     await state.finish()
+    await call.message.edit_reply_markup()
     await bot.send_message(user_id, "Hello back!", reply_markup=start_keys(user_id))
 
 
@@ -154,19 +155,10 @@ async def answer_question(call: CallbackQuery, state: FSMContext):
 async def process_answer_question(message: Message, state: FSMContext):
     user_id = message.chat.id
     answer_content = message.text
-    logging.info(f'QUESTION MODE: USER ID {user_id} RESPONDS TO QUESTION')
-    async with state.proxy() as data:
-        data["answer_content"] = answer_content
-    await AllQuestionsState.answer_email_state.set()
-    await bot.send_message(user_id, text='Please, provide your e-mail')
-
-
-@dp.message_handler(state=AllQuestionsState.answer_email_state)
-async def process_answer_email(message: Message, state: FSMContext):
-    user_id = message.chat.id
     logging.info(f'QUESTION MODE: USER ID {user_id} PROCESS ANSWER')
-    email = message.text
+    email = user_id
     data = await state.get_data()
+    data["answer_content"] = answer_content
     content = data['answer_content']
     question_id = data['question_id']
     await questions_api.write_answer(user=email, content=content, post_id=question_id)

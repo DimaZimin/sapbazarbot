@@ -25,8 +25,9 @@ async def start_question(call: CallbackQuery):
     await call.answer(cache_time=60)
     user_id = call.from_user.id
     logging.info(f'QUESTION MODE: USER ID {user_id} STARTED QUESTION CREATION')
-    await StartQuestion.title_state.set()
-    await bot.send_message(user_id, 'Please, type your question title')
+    await StartQuestion.content_state.set()
+    await bot.send_chat_action(user_id, action='typing')
+    await bot.send_message(user_id, 'Please, type question content')
 
 
 @rate_limit(5)
@@ -50,6 +51,8 @@ async def process_question_content(message: Message, state: FSMContext):
     logging.info(f'QUESTION MODE: USER ID {user_id} PROVIDED QUESTION CONTENT')
     async with state.proxy() as data:
         data["content"] = question_content
+        split_content = question_content.split('.')
+        data['title'] = split_content[0] if len(split_content) > 1 else split_content[0][:100]
     await StartQuestion.picture_state.set()
     await bot.send_chat_action(user_id, action='typing')
     await bot.send_message(user_id, "Now, you can attach a screenshot if needed. "
@@ -114,24 +117,14 @@ async def check_if_string_has_sap(string):
 @dp.callback_query_handler(QuestionCategories(), state=StartQuestion.category_state)
 async def process_question_category(call: CallbackQuery, state: FSMContext):
     await call.answer(cache_time=60)
+    await call.message.edit_reply_markup()
     user_id = call.from_user.id
     question_category = call.data.split('QuestionCategory_')[1]
     logging.info(f'QUESTION MODE: USER ID {user_id} SELECTED QUESTION CATEGORY {question_category}')
     async with state.proxy() as data:
         data["category"] = question_category
-    await StartQuestion.email_state.set()
-    await call.message.edit_reply_markup()
-    await bot.send_message(user_id, 'Please provide your mail')
-
-
-@rate_limit(5)
-@dp.message_handler(state=StartQuestion.email_state)
-async def process_question_content(message: Message, state: FSMContext):
-    user_id = message.chat.id
-    email = message.text
+        data["email"] = user_id
     logging.info(f'QUESTION MODE: USER ID {user_id} IS PROVIDING EMAIL')
-    async with state.proxy() as data:
-        data["email"] = email
     await StartQuestion.review.set()
     await bot.send_chat_action(user_id, action='typing')
     await bot.send_message(user_id, text=f"Please review your question post:\n\n"
@@ -141,10 +134,10 @@ async def process_question_content(message: Message, state: FSMContext):
                                          f"{data['content']}\n\n"
                                          f"<b>Category:</b>\n"
                                          f"{data['category']}\n\n"
-                                         f"<b>E-mail</b>:\n"
+                                         f"<b>Your telegram ID</b>:\n"
                                          f"{data['email']}\n"
-                                         f"Attached screen:\n"
-                                         f"{data['image_url']}\n\n",
+                                         f"<b>Attached screenshot:</b>\n"
+                                         f"{data['image_url'] if data['image_url'] else 'No attachment'}\n\n",
                            reply_markup=question_review_keys())
 
 
@@ -209,26 +202,16 @@ async def process_answer_question(message: Message, state: FSMContext):
     user_id = message.chat.id
     answer_content = message.text
     logging.info(f'QUESTION MODE: USER ID {user_id} RESPONDS TO QUESTION')
-    async with state.proxy() as data:
-        data["answer_content"] = answer_content
-    await AnswerQuestionState.answer_email.set()
-    await bot.send_message(user_id, text='Please, provide your e-mail')
-
-
-@dp.message_handler(state=AnswerQuestionState.answer_email)
-async def process_answer_email(message: Message, state: FSMContext):
-    user_id = message.chat.id
-    logging.info(f'QUESTION MODE: USER ID {user_id} PROCESS ANSWER')
-    email = message.text
     data = await state.get_data()
+    data["answer_content"] = answer_content
     content = data['answer_content']
     question_id = data['question_id']
     question_starter_user_id = await db.get_value('questions', 'user_id', 'post_id', question_id)
     question_starter_user_id = question_starter_user_id[0]['user_id']
-    answer_id = await questions_api.write_answer(user=email,
+    answer_id = await questions_api.write_answer(user=user_id,
                                                  content=content,
                                                  post_id=question_id)
-    await db.create_answer(user_id=user_id, user_mail=email, question_id=question_id, post_id=answer_id)
+    await db.create_answer(user_id=user_id, user_mail=user_id, question_id=question_id, post_id=answer_id)
     await state.finish()
     question_title = await questions_api.get_question_title(question_id)
     try:

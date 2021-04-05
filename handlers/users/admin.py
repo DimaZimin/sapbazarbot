@@ -3,7 +3,7 @@ import logging
 
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message
-from aiogram.utils.exceptions import BotBlocked
+from aiogram.utils.exceptions import BotBlocked, UserDeactivated, RetryAfter, ChatNotFound, TelegramAPIError
 
 from loader import dp, bot, db
 from keyboards.inline.keyboard import admin_start_keys, remove_categories_keys, remove_location_keys, start_keys
@@ -178,21 +178,54 @@ async def make_payable(call: CallbackQuery):
 async def mass_message(call: CallbackQuery):
     await call.answer(cache_time=60)
     user_id = call.message.chat.id
+    logging.info(f"ADMIN {user_id} STARTS MASS MESSAGE")
     await bot.send_chat_action(user_id, action='typing')
     await MassMessage.message_processing.set()
     await call.message.edit_reply_markup()
     await bot.send_message(user_id, text='Type a message', reply_markup=None)
 
 
+async def send_message(user_id: int, text: str, disable_notification: bool = False) -> bool:
+    """
+    Safe messages sender
+    :param user_id:
+    :param text:
+    :param disable_notification:
+    :return:
+    """
+    try:
+        await bot.send_message(user_id, text, disable_notification=disable_notification)
+    except BotBlocked:
+        logging.error(f"Target [ID:{user_id}]: blocked by user")
+    except ChatNotFound:
+        logging.error(f"Target [ID:{user_id}]: invalid user ID")
+    except RetryAfter as e:
+        logging.error(f"Target [ID:{user_id}]: Flood limit is exceeded. Sleep {e.timeout} seconds.")
+        await asyncio.sleep(e.timeout)
+        return await send_message(user_id, text)  # Recursive call
+    except UserDeactivated:
+        logging.error(f"Target [ID:{user_id}]: user is deactivated")
+    except TelegramAPIError:
+        logging.exception(f"Target [ID:{user_id}]: failed")
+    else:
+        logging.info(f"Target [ID:{user_id}]: success")
+        return True
+    return False
+
+
 @dp.message_handler(state=MassMessage)
-async def send_mass_message(message: Message, state: FSMContext):
-    user_id = message.chat.id
+async def send_mass_message_to_users(message: Message, state: FSMContext):
+    user_id = int(message.chat.id)
     subscribers = [user['user_id'] for user in await db.fetch_value('user_id', 'users')]
-    for user in subscribers:
-        try:
-            await bot.send_message(user, text=message.text)
-        except BotBlocked:
-            pass
+    logging.info(f"ADMIN {user_id} SENDS MESSAGE: {message.text}")
+    count = 0
+    try:
+        for user in subscribers:
+            if await send_message(int(user), text=message.text):
+                count += 1
+            await asyncio.sleep(.05)
+    finally:
+        logging.info(f"{count} messages sent")
     await state.finish()
     await bot.send_message(user_id, text='Main admin panel', reply_markup=admin_start_keys())
 
@@ -202,6 +235,7 @@ async def group_message(call: CallbackQuery):
     await call.answer(cache_time=60)
     user_id = call.message.chat.id
     await bot.send_chat_action(user_id, action='typing')
+    logging.info(f"ADMIN {user_id} MASS MESSAGE: ENTERING THE TEXT")
     await GroupMessage.message_processing.set()
     await call.message.edit_reply_markup()
     await bot.send_message(user_id, text='Type a message', reply_markup=None)

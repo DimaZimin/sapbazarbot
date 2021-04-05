@@ -2,12 +2,12 @@ import asyncio
 import logging
 
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters import Command, Text
+from aiogram.dispatcher.filters import Command
 from aiogram.utils.exceptions import BotBlocked, RetryAfter, UserDeactivated
-from aiogram.types import CallbackQuery, ReplyKeyboardRemove, Message
+from aiogram.types import CallbackQuery, Message
 from filters.filters import SubscriptionCategories, SubscriptionLocations
 from keyboards.inline.keyboard import start_subscription, subscription_category_keys, \
-    subscription_locations_keys, unsubscribe_key, blog_sub, start_keys_unsubscribe
+    subscription_locations_keys, blog_sub, start_keys_unsubscribe
 
 from states.states import Form
 from keyboards.inline.keyboard import start_keys

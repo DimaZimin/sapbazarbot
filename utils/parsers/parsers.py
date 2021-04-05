@@ -72,7 +72,10 @@ class HTMLParser:
 
     def __init__(self, url):
         self.url = url
-        self.source = requests.get(self.url).text
+        try:
+            self.source = requests.get(self.url).text
+        except requests.exceptions.ConnectionError:
+            self.source = ''
         self.soup = BeautifulSoup(self.source, 'html.parser')
         self.prettysoup = self.soup.prettify()
         try:
