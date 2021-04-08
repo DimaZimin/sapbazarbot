@@ -1,12 +1,13 @@
 import asyncio
 import logging
+from collections import defaultdict
 
 from aiogram.dispatcher.filters import Text
 from aiogram.types import CallbackQuery, Message
-from aiogram.utils.exceptions import BotBlocked, UserDeactivated
+from aiogram.utils.exceptions import BotBlocked, UserDeactivated, ChatNotFound, RetryAfter, TelegramAPIError
 
 from keyboards.inline.keyboard import start_keys, select_question_keys, get_questions_keys, answer_question_keys, \
-    feedback_answer_keys
+    feedback_answer_keys, answer_question_direct_keys
 from loader import dp, bot, db, questions_api, json_answers
 from states.states import MyQuestionsState, AllQuestionsState
 from utils.misc import rate_limit
@@ -208,17 +209,86 @@ async def check_new_answers_task(wait):
             logging.info("NO NEW ANSWERS")
 
 
+async def send_questions_message(user_id: int, text: str, question, disable_notification: bool = False) -> bool:
+    """
+    Safe messages sender
+    :param question:
+    :param user_id:
+    :param text:
+    :param disable_notification:
+    :return:
+    """
+    try:
+        await bot.send_message(user_id, text, disable_notification=disable_notification, reply_markup=answer_question_direct_keys(question))
+    except BotBlocked:
+        logging.error(f"Target [ID:{user_id}]: blocked by user")
+    except ChatNotFound:
+        logging.error(f"Target [ID:{user_id}]: invalid user ID")
+    except RetryAfter as e:
+        logging.error(f"Target [ID:{user_id}]: Flood limit is exceeded. Sleep {e.timeout} seconds.")
+        await asyncio.sleep(e.timeout)
+        return await send_questions_message(user_id, text)  # Recursive call
+    except UserDeactivated:
+        logging.error(f"Target [ID:{user_id}]: user is deactivated")
+    except TelegramAPIError:
+        logging.exception(f"Target [ID:{user_id}]: failed")
+    else:
+        logging.info(f"Target [ID:{user_id}]: success")
+        return True
+    return False
 
 
+async def get_unanswered_questions():
+    all_questions = questions_api.get_all_questions()
+    answered_questions = set([post.get('questid') for post in await questions_api.get_answers()])
+    unanswered = [(i.get('category'), i.get('postid'), i.get('content')) for i in list(all_questions) if
+                  i.get('postid') not in list(answered_questions)]
+
+    return unanswered
 
 
+async def unanswered_questions_task_users(wait_time):
+    while True:
+        logging.info("UNANSWERED QUESTION - USERS TASK")
+        unanswered = await get_unanswered_questions()
+        unanswered_by_cat = defaultdict(list)
+        unanswered_by_id = dict()
+        for category, question, content in unanswered:
+            unanswered_by_cat[category].append(question)
+            unanswered_by_id[question] = content
+        for cat, questions in unanswered_by_cat.items():
+            users = [u.get('user_id') for u in await db.select_category_users(cat)]
+            if users:
+                count = 0
+                try:
+                    for user in users:
+                        for q in questions:
+                            text = f"<b>Hello, someone needs your help. Please, answer the question below, " \
+                                   f"if you can.</b>\n\n{unanswered_by_id[q]}"
+                            if await send_questions_message(int(user), text=text, question=q):
+                                count += 1
+                            await asyncio.sleep(.1)
+                finally:
+                    logging.info(f"{count} messages sent")
+        await asyncio.sleep(wait_time)
 
 
+async def unanswered_questions_task_group(wait_time):
+    while True:
+        unanswered = await get_unanswered_questions()
 
+        unanswered_by_cat = defaultdict(list)
+        unanswered_by_id = dict()
 
+        for category, question, content in unanswered:
+            unanswered_by_cat[category].append(question)
+            unanswered_by_id[question] = content
 
-
-
-
-
-
+        text_to_channel = []
+        for cat, quest in unanswered_by_cat.items():
+            text_to_channel.append(f"\n<b>{cat}:</b>\n\n")
+            url_string = "".join([f"https://qa.sapbazar.com/{quest_id}/\n" for quest_id in quest])
+            text_to_channel.append(url_string)
+        text_to_channel = "Dear Gurus, please help our colleagues resolve SAP challenges\n\n" + "".join(text_to_channel)
+        await bot.send_message(chat_id='@ivankaim', text=text_to_channel)
+        await asyncio.sleep(wait_time)

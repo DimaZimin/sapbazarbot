@@ -351,3 +351,9 @@ class Database:
         """
         return await self.pool.fetchval(sql, post_id)
 
+    async def select_category_users(self, category):
+        sql = f"""
+        SELECT user_id FROM subscriptions WHERE category = $1
+        """
+        return await self.pool.fetch(sql, category)
+

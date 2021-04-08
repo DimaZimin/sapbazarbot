@@ -186,6 +186,12 @@ def answer_question_keys(question_id) -> InlineKeyboardMarkup:
     return markup
 
 
+def answer_question_direct_keys(question_id) -> InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup()
+    markup.insert(InlineKeyboardButton(text='Answer question', callback_data=f'AnswerQuestion_{question_id}'))
+    return markup
+
+
 def feedback_answer_keys(answer_id) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
     markup.insert(InlineKeyboardButton(text='Best Answer 🙏', callback_data=f'feedback_thebest_{answer_id}'))
