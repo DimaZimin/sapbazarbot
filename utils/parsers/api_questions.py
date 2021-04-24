@@ -196,9 +196,16 @@ class QuestionsAPI:
         }
         response = requests.request("POST", self.source, json=params)
         try:
-            response_body = response.json()['responseBody']
-            questions = response_body['questions']
-        except JSONDecodeError or KeyError:
+            response_json = response.json()
+        except JSONDecodeError:
+            return None
+        if response_json and response_json.get("status") == '401':
+            resp_body = None
+        else:
+            resp_body = response_json.get('responseBody')
+        if resp_body:
+            questions = resp_body.get('questions')
+        else:
             questions = None
         return questions
 

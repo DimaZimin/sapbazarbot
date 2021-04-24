@@ -1,5 +1,7 @@
 import logging
 
+import urllib3
+
 from loader import dp
 
 
@@ -46,10 +48,25 @@ async def errors_handler(update, exception):
     if isinstance(exception, TelegramAPIError):
         logging.exception(f'TelegramAPIError: {exception} \nUpdate: {update}')
         return True
+
     if isinstance(exception, RetryAfter):
         logging.exception(f'RetryAfter: {exception} \nUpdate: {update}')
         return True
+
     if isinstance(exception, CantParseEntities):
         logging.exception(f'CantParseEntities: {exception} \nUpdate: {update}')
         return True
+
+    if isinstance(exception, urllib3.exceptions.ConnectionError):
+        logging.exception(f'ConnectionError: {exception} \nUpdate: {update}')
+        return True
+
+    if isinstance(exception, urllib3.exceptions.NewConnectionError):
+        logging.exception(f'NewConnectionError: {exception} \nUpdate: {update}')
+        return True
+
+    if isinstance(exception, urllib3.exceptions.MaxRetryError):
+        logging.exception(f'MaxRetryError: {exception} \nUpdate: {update}')
+        return True
+
     logging.exception(f'Update: {update} \n{exception}')

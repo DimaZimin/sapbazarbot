@@ -5,9 +5,10 @@ from collections import defaultdict
 from aiogram.dispatcher.filters import Text
 from aiogram.types import CallbackQuery, Message
 from aiogram.utils.exceptions import BotBlocked, UserDeactivated, ChatNotFound, RetryAfter, TelegramAPIError
+from aiogram.utils.parts import split_text
 
-from keyboards.inline.keyboard import start_keys, select_question_keys, get_questions_keys, answer_question_keys, \
-    feedback_answer_keys, answer_question_direct_keys
+from keyboards.inline.keyboard import start_keys, select_question_keys, answer_question_keys, \
+    answer_question_direct_keys
 from loader import dp, bot, db, questions_api, json_answers
 from states.states import MyQuestionsState, AllQuestionsState
 from utils.misc import rate_limit
@@ -18,27 +19,23 @@ from aiogram.dispatcher import FSMContext
 @dp.callback_query_handler(text='my_questions')
 async def start_my_questions(call: CallbackQuery, state: FSMContext):
     await call.answer(cache_time=60)
-    user_id = call.from_user.id
+    user_id = str(call.from_user.id)
     logging.info(f'MY QUESTIONS MODE: USER ID {user_id} LISTS QUESTIONS')
-    user_mail = await db.get_user_question_mail(user_id)
-    if user_mail:
-        if user_mail == 1:
-            user_questions = await questions_api.get_user_questions(user_mail[0]['user_mail'])
-        else:
-            user_questions = await questions_api.get_user_questions(user_mail[-1]['user_mail'])
-        if user_questions:
-            user_question_titles = [
-               ". ".join((str(index), title)) for index, title in enumerate([
-                    question['title'] for question in user_questions], start=1)
-            ]
-            string_titles = "\n".join(user_question_titles)
-            await call.message.edit_reply_markup()
-            await bot.send_message(user_id, text=f'Your questions:\n{string_titles}',
-                                   reply_markup=select_question_keys())
-            async with state.proxy() as data:
-                data["questions"] = [(index, post_id['postid']) for index, post_id in enumerate(user_questions, start=1)]
-            await MyQuestionsState.question_list_state.set()
-    elif not user_mail:
+    external_user_id = await db.select_external_user_id(user_id)
+    user_questions = await questions_api.get_user_questions(external_user_id)
+    if user_questions:
+        user_question_titles = [
+           ". ".join((str(index), title)) for index, title in enumerate([
+                question['title'] for question in user_questions], start=1)
+        ]
+        string_titles = "\n".join(user_question_titles)
+        await call.message.edit_reply_markup()
+        await bot.send_message(user_id, text=f'Your questions:\n{string_titles}',
+                               reply_markup=select_question_keys())
+        async with state.proxy() as data:
+            data["questions"] = [(index, post_id['postid']) for index, post_id in enumerate(user_questions, start=1)]
+        await MyQuestionsState.question_list_state.set()
+    else:
         await call.message.edit_reply_markup()
         await bot.send_message(user_id, 'You have no questions', reply_markup=start_keys(user_id))
 
@@ -68,7 +65,7 @@ async def render_question_detail(message: Message, state: FSMContext):
     if selected_question in question_indexes:
         post_id = list(filter(lambda x: x[0] == selected_question, data['questions']))[0][1]
         response = await questions_api.get_detailed_question(post_id)
-        answers = response['responseBody'].get('answers')
+        answers = response.get('answers')
         if answers:
             answers_content = 'Answers:\n' + "\n".join(
                 [
@@ -77,7 +74,7 @@ async def render_question_detail(message: Message, state: FSMContext):
                 ]
             )
         else:
-            answers_content = 'No answers'
+            answers_content = 'There is no answers for this question yet'
         await state.finish()
         await bot.send_message(user_id, text=answers_content, reply_markup=start_keys(user_id))
     else:
@@ -101,12 +98,19 @@ async def all_questions_starter(call: CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         data['questions'] = questions_api.get_all_questions()
         data['answers'] = await questions_api.get_answers()
-    question_answers = [q['questid'] for q in data['answers']]
+        question_answers = [quest['questid'] for quest in data['answers']]
+        answered_questions = set(question_answers)
+        unanswered = [i for i in list(data['questions']) if
+                      i.get('postid') not in list(answered_questions)]
+        data['unanswered'] = unanswered
     data_to_send = "\n".join(
         [f"{index}. {question['title']}.\nAnswers: {question_answers.count(question['postid'])}\n\n"
-         for index, question in enumerate(data['questions'], start=1)]
+         for index, question in enumerate(unanswered, start=1)]
     )
-    await bot.send_message(user_id, text="Please specify question number\n\n" + data_to_send)
+    data_to_send = split_text(data_to_send)
+    for msg in data_to_send:
+        await bot.send_message(user_id, text="Please specify question number\n\n")
+        await bot.send_message(user_id, text=msg)
 
 
 @dp.message_handler(lambda message: message.text.isdigit() and message.text != '0',
@@ -115,7 +119,7 @@ async def all_questions_detail(message: Message, state: FSMContext):
     user_id = message.from_user.id
     selected_question = int(message.text) - 1
     data = await state.get_data()
-    question = data['questions'][selected_question]
+    question = data['unanswered'][selected_question]
     question_id = question['postid']
     question_content = question['content']
     detailed_query = await questions_api.get_detailed_question(question['postid'])
@@ -227,7 +231,7 @@ async def send_questions_message(user_id: int, text: str, question, disable_noti
     except RetryAfter as e:
         logging.error(f"Target [ID:{user_id}]: Flood limit is exceeded. Sleep {e.timeout} seconds.")
         await asyncio.sleep(e.timeout)
-        return await send_questions_message(user_id, text)  # Recursive call
+        return await send_questions_message(user_id, text, question)  # Recursive call
     except UserDeactivated:
         logging.error(f"Target [ID:{user_id}]: user is deactivated")
     except TelegramAPIError:
@@ -249,6 +253,7 @@ async def get_unanswered_questions():
 
 async def unanswered_questions_task_users(wait_time):
     while True:
+        await asyncio.sleep(wait_time)
         logging.info("UNANSWERED QUESTION - USERS TASK")
         unanswered = await get_unanswered_questions()
         unanswered_by_cat = defaultdict(list)
@@ -270,11 +275,12 @@ async def unanswered_questions_task_users(wait_time):
                             await asyncio.sleep(.1)
                 finally:
                     logging.info(f"{count} messages sent")
-        await asyncio.sleep(wait_time)
 
 
 async def unanswered_questions_task_group(wait_time):
     while True:
+        await asyncio.sleep(wait_time)
+        logging.info("UNANSWERED QUESTION - GROUP TASK")
         unanswered = await get_unanswered_questions()
 
         unanswered_by_cat = defaultdict(list)
@@ -290,5 +296,4 @@ async def unanswered_questions_task_group(wait_time):
             url_string = "".join([f"https://qa.sapbazar.com/{quest_id}/\n" for quest_id in quest])
             text_to_channel.append(url_string)
         text_to_channel = "Dear Gurus, please help our colleagues resolve SAP challenges\n\n" + "".join(text_to_channel)
-        await bot.send_message(chat_id='@ivankaim', text=text_to_channel)
-        await asyncio.sleep(wait_time)
+        await bot.send_message(chat_id='@sapbazar', text=text_to_channel)

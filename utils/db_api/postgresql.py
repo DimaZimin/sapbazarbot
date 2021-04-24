@@ -357,3 +357,8 @@ class Database:
         """
         return await self.pool.fetch(sql, category)
 
+    async def select_external_user_id(self, email):
+        sql = f"""
+        SELECT external_user_id FROM questions WHERE user_mail = $1
+        """
+        return await self.pool.fetchval(sql, email)
