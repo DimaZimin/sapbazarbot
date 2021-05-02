@@ -65,16 +65,18 @@ async def render_question_detail(message: Message, state: FSMContext):
     if selected_question in question_indexes:
         post_id = list(filter(lambda x: x[0] == selected_question, data['questions']))[0][1]
         response = await questions_api.get_detailed_question(post_id)
+        comments = await questions_api.get_comments(post_id)
         answers = response.get('answers')
+        comments_content = "\n".join([". ".join((str(index), comment['content']))
+                                        for index, comment in enumerate(comments, start=1)]) if comments else None
         if answers:
-            answers_content = 'Answers:\n' + "\n".join(
-                [
-                    ". ".join((str(index), value)) for index, value in enumerate([item['content'] for item in answers],
-                                                                                 start=1)
-                ]
-            )
+            answers_heading = "Answers:\n\n"
+            answers_enumerated = enumerate([item['content'] for item in answers], start=1)
+            answers_enum_joined = [". ".join((str(index), value)) for index, value in answers_enumerated]
+            answers_content = answers_heading + "\n".join(answers_enum_joined) + "\n\nComments:\n\n" + comments_content
         else:
             answers_content = 'There is no answers for this question yet'
+
         await state.finish()
         await bot.send_message(user_id, text=answers_content, reply_markup=start_keys(user_id))
     else:

@@ -185,16 +185,17 @@ async def mass_message(call: CallbackQuery):
     await bot.send_message(user_id, text='Type a message', reply_markup=None)
 
 
-async def send_message(user_id: int, text: str, disable_notification: bool = False) -> bool:
+async def send_message(user_id: int, text: str, disable_notification: bool = False, reply_markup=None) -> bool:
     """
     Safe messages sender
     :param user_id:
     :param text:
     :param disable_notification:
+    :param reply_markup:
     :return:
     """
     try:
-        await bot.send_message(user_id, text, disable_notification=disable_notification)
+        await bot.send_message(user_id, text, disable_notification=disable_notification, reply_markup=reply_markup)
     except BotBlocked:
         logging.error(f"Target [ID:{user_id}]: blocked by user")
     except ChatNotFound:
@@ -221,7 +222,7 @@ async def send_mass_message_to_users(message: Message, state: FSMContext):
     count = 0
     try:
         for user in subscribers:
-            if await send_message(int(user), text=message.text):
+            if await send_message(int(user), text=message.text, reply_markup=start_keys(user_id)):
                 count += 1
             await asyncio.sleep(.05)
     finally:

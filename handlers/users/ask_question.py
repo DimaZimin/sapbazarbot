@@ -8,14 +8,14 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from aiogram.types import CallbackQuery, Message
-from aiogram.utils.exceptions import BotBlocked
+from aiogram.utils.exceptions import BotBlocked, UserDeactivated
 from data.config import BOT_TOKEN
 from filters.filters import QuestionCategories
 from keyboards.inline.keyboard import question_category_keys, question_review_keys, start_keys, \
-    answer_question_keys, feedback_answer_keys
+    answer_question_keys, feedback_answer_keys, reply_for_comment_keys
 from loader import dp, bot, db, questions_api
 
-from states.states import StartQuestion, AnswerQuestionState
+from states.states import StartQuestion, AnswerQuestionState, CommentState, ReplyCommentState
 from utils.misc import rate_limit
 
 
@@ -219,13 +219,13 @@ async def process_answer_question(message: Message, state: FSMContext):
                                                               f"{question_title}\n"
                                                               f"<b>Answer:</b>\n{content}",
                                parse_mode='HTML', reply_markup=feedback_answer_keys(answer_id))
-    except BotBlocked:
+    except BotBlocked or UserDeactivated:
         pass
     await bot.send_message(user_id, 'Your answer has been posted! Thank you.', reply_markup=start_keys(user_id))
 
 
 @dp.callback_query_handler(Text(startswith='feedback_'))
-async def give_feedback_helpful(call: CallbackQuery):
+async def give_feedback_helpful(call: CallbackQuery, state: FSMContext):
     await call.answer(cache_time=60)
     user_id = call.from_user.id
     feedback = call.data
@@ -249,3 +249,58 @@ async def give_feedback_helpful(call: CallbackQuery):
                                reply_markup=start_keys(user_id))
         await call.message.edit_reply_markup()
         await questions_api.set_best_answer(question_id=question_id, answer_id=answer_id, user_id=user_mail)
+    elif feedback_type == "comment":
+        await call.message.edit_reply_markup()
+        await CommentState.write_comment_state.set()
+        async with state.proxy() as data:
+            data['answer_id'] = answer_id
+        await bot.send_message(user_id, text="Please write your comment")
+
+
+@dp.callback_query_handler(Text(startswith='comment_'))
+async def reply_on_comment(call: CallbackQuery, state: FSMContext):
+    await call.answer(cache_time=60)
+    user_id = call.from_user.id
+    callback_data = call.data
+    answer_id = callback_data.split('_')[1]
+    to_user = callback_data.split('_')[-1]
+    await call.message.edit_reply_markup()
+    await ReplyCommentState.reply_to_state.set()
+    async with state.proxy() as data:
+        data['answer_id'] = answer_id
+        data['to_user'] = to_user
+    await bot.send_message(user_id, text="Please write your comment")
+
+
+@dp.message_handler(state=ReplyCommentState.reply_to_state)
+async def process_reply_comment(message: Message, state: FSMContext):
+    user_id = message.chat.id
+    data = await state.get_data()
+    answer_id = data.get("answer_id")
+    reply_to_user = data.get("to_user")
+    comment_content = message.text
+    comment_heading = "Hello! You have received a comment for your comment:\n"
+    await bot.send_message(reply_to_user, text=comment_heading + comment_content,
+                           reply_markup=reply_for_comment_keys(answer_id, user_id))
+    await questions_api.write_comment(answer_id, user_id, comment_content)
+    await state.finish()
+    await bot.send_message(user_id, text="Your comment has been sent.", reply_markup=start_keys(user_id))
+
+
+@dp.message_handler(state=CommentState.write_comment_state)
+async def write_comment(message: Message, state: FSMContext):
+    user_id = message.chat.id
+    data = await state.get_data()
+    answer_id = data.get("answer_id")
+    comment_content = message.text
+    user_answer_id = await db.get_user_by_answer_id(answer_id)
+    comment_heading = "Hello! You have received a comment for your answer:\n\n"
+
+    if user_answer_id:
+        await bot.send_message(user_answer_id, text=comment_heading + comment_content,
+                               reply_markup=reply_for_comment_keys(answer_id, user_id))
+
+    await questions_api.write_comment(answer_id, user_id, comment_content)
+    await state.finish()
+
+    await bot.send_message(user_id, text="Your comment has been sent.", reply_markup=start_keys(user_id))

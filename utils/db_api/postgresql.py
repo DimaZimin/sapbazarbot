@@ -101,7 +101,7 @@ class Database:
         sql = """
         CREATE TABLE IF NOT EXISTS answers (
         user_id INT NOT NULL,
-        question_id VARCHAR(255) NOT NULL REFERENCES questions (post_id) UNIQUE,
+        question_id VARCHAR(255) NOT NULL REFERENCES questions (post_id),
         post_id VARCHAR(255),
         user_mail VARCHAR(255)
         );
@@ -320,6 +320,12 @@ class Database:
         SELECT user_mail FROM answers WHERE post_id = '{answer_id}'
         """
         return await self.pool.fetch(sql)
+
+    async def get_user_by_answer_id(self, answer_id):
+        sql = f"""
+            SELECT user_id FROM answers WHERE post_id = $1
+            """
+        return await self.pool.fetchval(sql, str(answer_id))
 
     async def get_question_id_by_answer_id(self, answer_id):
         sql = f"""

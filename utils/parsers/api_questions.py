@@ -235,6 +235,29 @@ class QuestionsAPI:
         answers = response.json()['responseBody']['answers']
         return answers
 
+    async def get_comments(self, qid):
+        question = await self.get_detailed_question(qid)
+        return question.get("comments")
+
+    async def write_comment(self, parent_id, user, content):
+        params = {
+            "requestHeader": {
+                "serviceId": "111",
+                "interactionCode": "WRITECOMMENT"},
+            "requestBody": {
+                "userid": f"{user}",
+                "content": f"{content}",
+                "parentpostid": f"{parent_id}"}
+        }
+        try:
+            response = requests.request("POST", self.source, json=params)
+        except JSONDecodeError:
+            response = {"error": "invalid request"}
+        #  response:
+        #  {'responseHeader': {'serviceId': '111', 'status': '200', 'message': 'Answer added'},
+        #  'responseBody': {'userid': '249', 'postid': 318}}
+        return response
+
     async def is_new_answers(self, file):
         current = await self.get_answers()
         previous = self.read_json(file)

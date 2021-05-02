@@ -145,9 +145,10 @@ async def process_job_category(call: CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         data["job_category"] = job_category
     logging.info(f'USER ID {job_category} CATEGORY ADDED')
-    await CreateJob.job_location.set()
+    await CreateJob.contact.set()
     await call.message.edit_reply_markup()
-    await bot.send_message(chat_id=user_id, text='Choose job location', reply_markup=await job_locations_keys())
+    await bot.send_message(chat_id=user_id, text='Please provide your contact details. '
+                                                 'Type your name, email and mobile phone number.')
 
 
 @rate_limit(5)
@@ -174,6 +175,7 @@ async def process_contact_data(message: Message, state: FSMContext):
     await bot.send_chat_action(user_id, action='typing')
     async with state.proxy() as data:
         data["contact"] = contact
+        data["job_location"] = 'Remote'
     await CreateJob.send_invoice.set()
     await bot.send_message(chat_id=user_id, text=f"Please, review your job posting\n\n"
                                                  f"<b>Your company name</b>:\n"

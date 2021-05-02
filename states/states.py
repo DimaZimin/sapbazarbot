@@ -77,3 +77,12 @@ class AllQuestionsState(StatesGroup):
     answer_content_state = State()
     answer_email_state = State()
 
+
+class CommentState(StatesGroup):
+
+    write_comment_state = State()
+
+
+class ReplyCommentState(StatesGroup):
+
+    reply_to_state = State()

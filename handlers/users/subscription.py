@@ -42,11 +42,14 @@ async def choose_category(call: CallbackQuery):
     await call.answer(cache_time=60)
     user_id = int(call.from_user.id)
     user_categories = await db.get_value('subscriptions', column='category', where_col='user_id', value=user_id)
+
     if call.data == 'next' and user_categories:
         logging.info(f'CHAT ID: {user_id} CHOOSING LOCATION')
         await Form.state.set()
         await call.message.edit_reply_markup()
-        await call.message.answer('Please, choose your location', reply_markup=await subscription_locations_keys())
+        await db.update_user(user_id=user_id, location="Remote")
+        await call.message.answer(f'Do you want to subscribe to the SAP blog?', reply_markup=blog_sub())
+
     elif call.data == 'next' and not user_categories:
         logging.info(f'EMPTY CATEGORY\tCHAT ID: {call.from_user.id}')
         await call.message.edit_reply_markup()
@@ -67,28 +70,8 @@ async def choose_category(call: CallbackQuery):
 
 
 @rate_limit(5)
-@dp.callback_query_handler(SubscriptionLocations(), state=Form.state)
-async def set_location(call: CallbackQuery, state: FSMContext):
-    """
-    Callback query catches name of location. Locations are stored in keyboard.py LOCATIONS variable.
-    """
-    await call.answer(cache_time=60)
-    callback_data = (call.message.text, call.message.chat.id)
-    logging.info(f'call = {callback_data[0]}\tchat id: {callback_data[1]}')
-    user_id = int(call.from_user.id)
-    location = call.data
-    await db.update_user(user_id=user_id, location=location)
-    logging.info(f'LOCATION UPDATED: {location} FOR USER ID: {user_id}')
-    await state.finish()
-    await call.message.edit_reply_markup()
-    await call.message.answer(f'{location} location has been selected. '
-                              f'Do you want to subscribe to the SAP blog?',
-                              reply_markup=blog_sub())
-
-
-@rate_limit(5)
-@dp.callback_query_handler(text=['yes', 'no'])
-async def subscribe_on_blog(call: CallbackQuery):
+@dp.callback_query_handler(text=['yes', 'no'], state=Form.state)
+async def subscribe_on_blog(call: CallbackQuery, state: FSMContext):
     await call.answer(cache_time=60)
     user_id = call.from_user.id
     if call.data == 'yes':
@@ -100,6 +83,7 @@ async def subscribe_on_blog(call: CallbackQuery):
     await db.update_user(user_id, job_subscription='True')
     await call.message.edit_reply_markup()
     logging.info(f"USER {user_id} SUBSCRIBED FOR JOB ALERT")
+    await state.finish()
     await call.message.answer(f'You have successfully subscribed for job alert!',
                               reply_markup=start_keys_unsubscribe(user_id))
 
