@@ -8,7 +8,7 @@ from aiogram.utils.exceptions import BotBlocked, UserDeactivated, ChatNotFound, 
 from aiogram.utils.parts import split_text
 
 from keyboards.inline.keyboard import start_keys, select_question_keys, answer_question_keys, \
-    answer_question_direct_keys
+    answer_question_direct_keys, reply_for_comment_keys
 from loader import dp, bot, db, questions_api, json_answers
 from states.states import MyQuestionsState, AllQuestionsState
 from utils.misc import rate_limit
@@ -170,7 +170,11 @@ async def process_answer_question(message: Message, state: FSMContext):
     question_id = data['question_id']
     await questions_api.write_answer(user=email, content=content, post_id=question_id)
     await state.finish()
-    await bot.send_message(user_id, 'Your answer has been posted! Thank you.', reply_markup=start_keys(user_id))
+    user_points = await questions_api.get_user_points(user_id)
+    await bot.send_message(user_id, 'Your answer has been posted! Thank you. '
+                                    'Your points score has been updated.'
+                                    f'You have {user_points} points now.',
+                           reply_markup=start_keys(user_id))
 
 
 @dp.message_handler(lambda message: not message.text.isdigit() or message.text == '0', state=AllQuestionsState.select_question_state)
@@ -188,6 +192,7 @@ async def check_new_answers_task(wait):
             logging.info(f"NEW ANSWERS {new_answers}")
             for answer in new_answers:
                 question_id = answer['questid']
+                answer_id = answer['postid']
                 logging.info(f"QUESTION ID {question_id}")
                 user_id = await db.select_user_by_post_id(question_id)
                 logging.info(f"USER ID {user_id}")
@@ -204,10 +209,13 @@ async def check_new_answers_task(wait):
                         logging.info(f"ANSWER IS SENDING TO USER")
                         question_title = detailed_question.get('question')[0]['title']
                         try:
-                            await bot.send_message(user_id,
-                                                   text=f"Hi! You have got a new answer "
-                                                        f"for your question {question_title}:\n\n"
-                                                        f"{answer_content}")
+                            await bot.send_message(
+                                user_id,
+                                text=f"Hi! You have got a new answer "
+                                     f"for your question {question_title}:\n\n"
+                                     f"{answer_content}", reply_markup=reply_for_comment_keys(answer_id, user_id)
+                            )
+                            await bot.send_message(user_id, text='Menu', reply_markup=start_keys(user_id))
                         except BotBlocked or UserDeactivated:
                             logging.info(f"ANSWER NOT SENT. BOT BLOCKED OR USER DEACTIVATED.")
                             pass
@@ -275,6 +283,7 @@ async def unanswered_questions_task_users(wait_time):
                             if await send_questions_message(int(user), text=text, question=q):
                                 count += 1
                             await asyncio.sleep(.1)
+                        await bot.send_message(int(user), "Menu", reply_markup=start_keys(int(user)))
                 finally:
                     logging.info(f"{count} messages sent")
 

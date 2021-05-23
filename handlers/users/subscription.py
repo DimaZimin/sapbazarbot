@@ -3,7 +3,7 @@ import logging
 
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
-from aiogram.utils.exceptions import BotBlocked, RetryAfter, UserDeactivated
+from aiogram.utils.exceptions import BotBlocked, RetryAfter, UserDeactivated, ChatNotFound, TelegramAPIError
 from aiogram.types import CallbackQuery, Message
 from filters.filters import SubscriptionCategories, SubscriptionLocations
 from keyboards.inline.keyboard import start_subscription, subscription_category_keys, \
@@ -11,10 +11,38 @@ from keyboards.inline.keyboard import start_subscription, subscription_category_
 
 from states.states import Form
 from keyboards.inline.keyboard import start_keys
-from loader import dp, db, bot, json_db
+from loader import dp, db, bot, json_db, questions_api
 from utils.parsers import parsers
 from utils.misc import rate_limit
 
+
+async def send_message(user_id: int, text: str, disable_notification: bool = False, reply_markup=None) -> bool:
+    """
+    Safe messages sender
+    :param user_id:
+    :param text:
+    :param disable_notification:
+    :param reply_markup:
+    :return:
+    """
+    try:
+        await bot.send_message(user_id, text, disable_notification=disable_notification, reply_markup=reply_markup)
+    except BotBlocked:
+        logging.error(f"Target [ID:{user_id}]: blocked by user")
+    except ChatNotFound:
+        logging.error(f"Target [ID:{user_id}]: invalid user ID")
+    except RetryAfter as e:
+        logging.error(f"Target [ID:{user_id}]: Flood limit is exceeded. Sleep {e.timeout} seconds.")
+        await asyncio.sleep(e.timeout)
+        return await send_message(user_id, text)  # Recursive call
+    except UserDeactivated:
+        logging.error(f"Target [ID:{user_id}]: user is deactivated")
+    except TelegramAPIError:
+        logging.exception(f"Target [ID:{user_id}]: failed")
+    else:
+        logging.info(f"Target [ID:{user_id}]: success")
+        return True
+    return False
 
 @rate_limit(5)
 @dp.callback_query_handler(start_subscription.filter(action='subscribe'))
@@ -167,14 +195,17 @@ async def blog_task(wait_time):
                 logging.info(f"CATEGORY: {category}\nURL: {post_url}\n")
                 subscribers = await db.get_blog_subscription_users(f"{category}")
                 logging.info(f"SUBSCRIBERS: {subscribers}")
-                for subscriber in subscribers:
-                    logging.info(f"SENDING URL TO: {subscriber}")
-                    try:
-                        await bot.send_message(subscriber['user_id'], text=f'<a href="{post_url}"> Hey! We got'
-                                                                           f' a new post here! Check this out.</a>',
-                                               parse_mode='HTML')
-                    except BotBlocked or RetryAfter or UserDeactivated:
-                        pass
+                count = 0
+                try:
+                    for subscriber in subscribers:
+                        logging.info(f"SENDING URL TO: {subscriber}")
+                        text_to_send = f'<a href="{post_url}"> Hey! We got a new post here! Check this out.</a>'
+                        user_id = subscriber['user_id']
+                        if await send_message(int(user_id), text=text_to_send, reply_markup=start_keys(user_id)):
+                            count += 1
+                        await asyncio.sleep(.05)
+                finally:
+                    logging.info(f"{count} messages sent")
             json_manager.update_blog_urls('blog_urls')
 
 
@@ -194,3 +225,42 @@ async def blog_task_for_channel(wait_time):
             except RetryAfter:
                 pass
             json_manager.update_blog_urls('blog_channel')
+
+
+async def points_task(wait_time):
+    while True:
+        await asyncio.sleep(wait_time)
+        users_points = await questions_api.get_top_ten()
+
+        if users_points:
+            user_rating = []
+
+            for chat in users_points:
+
+                chat_id = chat['user']
+                points = chat['points']
+
+                try:
+                    user_chat = await bot.get_chat(chat_id=chat_id)
+                    full_name = f"{user_chat.first_name if user_chat.first_name else ''} " \
+                                f"{user_chat.last_name if user_chat.last_name else ''} " \
+                                f"{user_chat.username if user_chat.username else ''}"
+
+                    user_rating.append(f"{full_name} - {points} points")
+                except ChatNotFound:
+                    user_rating.append(f"{chat_id} - {points} points")
+
+            joined_points = '\n'.join(user_rating)
+            text_to_send = f"Hello! The rating of the most active SAP consultants:\n\n{joined_points}\n\n"
+
+            all_users = await db.fetch_value('user_id', 'users')
+            count = 0
+
+            try:
+                for user in all_users:
+                    user_id = user['user_id']
+                    if await send_message(int(user_id), text=text_to_send, reply_markup=start_keys(user_id)):
+                        count += 1
+                    await asyncio.sleep(.05)
+            finally:
+                logging.info(f"{count} messages sent")

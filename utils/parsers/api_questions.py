@@ -258,6 +258,45 @@ class QuestionsAPI:
         #  'responseBody': {'userid': '249', 'postid': 318}}
         return response
 
+    async def get_user_points(self, user_id):
+        params = {
+            "requestHeader": {
+                "serviceId": "111",
+                "interactionCode": "GETUSERPOINTS",
+                "user_id": f"{user_id}"
+            }
+        }
+        response = requests.request("GET", self.source, json=params)
+        try:
+            json_response = response.json()
+        except JSONDecodeError:
+            json_response = {"error": "invalid request"}
+        response_body = json_response.get("responseBody")
+        if response_body:
+            points = response_body.get("points")[0].get('points')
+        else:
+            return 0
+        return points
+
+    async def get_top_ten(self):
+        params = {
+            "requestHeader": {
+                "serviceId": "111",
+                "interactionCode": "GETTOPTEN"
+            }
+        }
+        response = requests.request("GET", self.source, json=params)
+        try:
+            json_response = response.json()
+        except JSONDecodeError:
+            json_response = {"error": "invalid request"}
+        response_body = json_response.get("responseBody")
+        if response_body:
+            points = response_body.get('points')
+        else:
+            points = None
+        return points
+
     async def is_new_answers(self, file):
         current = await self.get_answers()
         previous = self.read_json(file)

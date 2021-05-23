@@ -221,7 +221,11 @@ async def process_answer_question(message: Message, state: FSMContext):
                                parse_mode='HTML', reply_markup=feedback_answer_keys(answer_id))
     except BotBlocked or UserDeactivated:
         pass
-    await bot.send_message(user_id, 'Your answer has been posted! Thank you.', reply_markup=start_keys(user_id))
+    user_points = await questions_api.get_user_points(user_id)
+    await bot.send_message(user_id, 'Your answer has been posted! Thank you.\n'
+                                    'Your points score has been updated.\n'
+                                    f'You have {user_points} points now.',
+                           reply_markup=start_keys(user_id))
 
 
 @dp.callback_query_handler(Text(startswith='feedback_'))
