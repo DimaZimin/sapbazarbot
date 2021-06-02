@@ -54,6 +54,9 @@ class StartQuestion(StatesGroup):
     category_state = State()
     email_state = State()
     review = State()
+    send_invoice = State()
+    checkout = State()
+    payment_paid = State()
 
 
 class AnswerQuestionState(StatesGroup):

@@ -44,6 +44,7 @@ async def send_message(user_id: int, text: str, disable_notification: bool = Fal
         return True
     return False
 
+
 @rate_limit(5)
 @dp.callback_query_handler(start_subscription.filter(action='subscribe'))
 async def process_subscription(call: CallbackQuery):
@@ -217,7 +218,7 @@ async def blog_task_for_channel(wait_time):
 
         if len(new_posts) >= 5:
             text_to_send = "\n\n".join([
-                f'<a href="{post[0]}">{post[2]}</a> in {post[1]}' for post in new_posts
+                f'<a href="{post[0]}">{post[2]}</a> in {post[1]}' for post in new_posts[:5]
             ])
             try:
                 await bot.send_message(chat_id='@sapbazar', text=f'New posts:\n\n{text_to_send}',

@@ -105,6 +105,15 @@ def payment_keys() -> InlineKeyboardMarkup:
     )
 
 
+def question_payment_keys() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        row_width=1,
+        inline_keyboard=[
+            [InlineKeyboardButton('Pay', pay=True)],
+            [InlineKeyboardButton('Cancel', callback_data='cancel_question_payment')]
+        ]
+    )
+
 async def subscription_locations_keys() -> InlineKeyboardMarkup:
     """
     Inline keyboard associated with locations and cities included in LOCATIONS list namespace.
@@ -174,8 +183,9 @@ async def question_category_keys() -> InlineKeyboardMarkup:
 
 
 def question_review_keys() -> InlineKeyboardMarkup:
-    markup = InlineKeyboardMarkup(row_width=2)
-    markup.insert(InlineKeyboardButton(text='Create post', callback_data="questions_create"))
+    markup = InlineKeyboardMarkup(row_width=1)
+    markup.insert(InlineKeyboardButton(text='Ask question for free', callback_data="questions_create"))
+    markup.insert(InlineKeyboardButton(text='Paid question', callback_data="paid_questions_create"))
     markup.insert(InlineKeyboardButton(text='Cancel', callback_data="questions_cancel"))
     return markup
 
@@ -220,4 +230,3 @@ def get_questions_keys() -> InlineKeyboardMarkup:
     markup.insert(InlineKeyboardButton(text='Answered questions', callback_data='answered_questions'))
     markup.insert(InlineKeyboardButton(text='Unanswered questions', callback_data='unanswered_questions'))
     return markup
-

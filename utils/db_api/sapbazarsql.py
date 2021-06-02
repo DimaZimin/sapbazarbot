@@ -12,7 +12,7 @@ class SAPBazarSQL:
             result = db.fetchone()
         try:
             return result[0]
-        except TypeError and IndexError:
+        except TypeError or IndexError:
             return None
 
     @staticmethod
@@ -22,7 +22,7 @@ class SAPBazarSQL:
             result = db.fetchall()
         try:
             return result
-        except TypeError and IndexError:
+        except TypeError or IndexError:
             return None
 
     @staticmethod

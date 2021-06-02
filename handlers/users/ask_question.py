@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import io
 import logging
@@ -7,12 +8,13 @@ from PIL import Image
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, ContentTypes
 from aiogram.utils.exceptions import BotBlocked, UserDeactivated
-from data.config import BOT_TOKEN
+from data.config import BOT_TOKEN, PAYMENTS_PROVIDER_TOKEN
 from filters.filters import QuestionCategories
+from handlers.users.subscription import send_message
 from keyboards.inline.keyboard import question_category_keys, question_review_keys, start_keys, \
-    answer_question_keys, feedback_answer_keys, reply_for_comment_keys
+    answer_question_keys, feedback_answer_keys, reply_for_comment_keys, question_payment_keys
 from loader import dp, bot, db, questions_api
 
 from states.states import StartQuestion, AnswerQuestionState, CommentState, ReplyCommentState
@@ -137,8 +139,109 @@ async def process_question_category(call: CallbackQuery, state: FSMContext):
                                          f"<b>Your telegram ID</b>:\n"
                                          f"{data['email']}\n"
                                          f"<b>Attached screenshot:</b>\n"
-                                         f"{data['image_url'] if data['image_url'] else 'No attachment'}\n\n",
+                                         f"{data['image_url'] if data['image_url'] else 'No attachment'}\n\n"
+                                         f"\nSelect paid or free option. Please note, that paid questions "
+                                         f"will be answered by our experts in a short period time.",
                            reply_markup=question_review_keys())
+
+
+async def prices():
+    fee_amount = await db.fetch_value('posting_fees', 'settings')
+    return [
+        types.LabeledPrice(label='Question posting fees', amount=int(fee_amount[0]['posting_fees'])),
+        types.LabeledPrice(label='VAT 20%', amount=int(fee_amount[0]['posting_fees'] * 0.2)),
+    ]
+
+
+@dp.callback_query_handler(text='paid_questions_create', state=StartQuestion.review)
+async def paid_question_send_invoice(call: CallbackQuery, state: FSMContext):
+    await call.answer(cache_time=60)
+    user_id = call.message.chat.id
+    data = await state.get_data()
+    await StartQuestion.send_invoice.set()
+    await call.message.edit_reply_markup()
+    await bot.send_invoice(
+        user_id,
+        title='Invoice for paid question',
+        description=f"Question title:\n"
+                    f"{data['title']}\n\n"
+                    f"Question content:\n"
+                    f"{data['content']}\n\n"
+                    f"Category:\n"
+                    f"{data['category']}\n\n"
+                    f"Your telegram ID:\n"
+                    f"{data['email']}\n",
+        provider_token=PAYMENTS_PROVIDER_TOKEN,
+        currency='rub',
+        prices=await prices(),
+        start_parameter="create_job_invoice",
+        need_name=True,
+        need_email=True,
+        need_shipping_address=False,
+        is_flexible=False,
+        payload='PAID_QUESTION',
+        reply_markup=question_payment_keys()
+    )
+
+
+@dp.callback_query_handler(text='cancel_question_payment', state=StartQuestion.send_invoice)
+async def cancel_paid_question(call: CallbackQuery, state: FSMContext):
+    await call.answer(cache_time=60)
+    user_id = call.message.chat.id
+    await bot.send_chat_action(user_id, action='typing')
+    await state.finish()
+    logging.info(f'USER ID {user_id} CANCEL PAID QUESTION')
+    await bot.send_message(user_id, text='Job posting has been cancelled.', reply_markup=None)
+    await bot.send_message(user_id, text='Welcome back!', reply_markup=start_keys(user_id))
+
+
+@dp.pre_checkout_query_handler(lambda query: True, state=StartQuestion.send_invoice)
+async def checkout(query: types.PreCheckoutQuery, state: FSMContext):
+    await StartQuestion.checkout.set()
+    async with state.proxy() as data:
+        data["email"] = query.order_info['email']
+    logging.info(f'USER ID {query.from_user.id} checkout')
+    await bot.answer_pre_checkout_query(pre_checkout_query_id=query.id, ok=True,
+                                        error_message="Something went wrong. "
+                                                      "Payment was not successful. "
+                                                      "Please try again.")
+
+
+@dp.message_handler(content_types=ContentTypes.SUCCESSFUL_PAYMENT, state=StartQuestion.checkout)
+async def got_payment(message: types.Message, state: FSMContext):
+    user_id = message.chat.id
+    data = await state.get_data()
+    logging.info(f'PAID QUESTION MODE: USER ID {user_id} PAID FOR QUESTION')
+    response = await questions_api.create_question(data['email'],
+                                                   data['title'],
+                                                   data['content'],
+                                                   await questions_api.get_category_id(data['category']),
+                                                   await questions_api.get_category_tag(data['category']),
+                                                   photo=data['image_url'])
+    question_id = str(response['responseBody']['postid'])
+    external_user_id = str(response['responseBody']['userid'])
+    await db.create_question(user_id=user_id,
+                             post_id=question_id,
+                             user_email=data['email'],
+                             external_user_id=external_user_id)
+    await state.finish()
+    await bot.send_message(user_id, "Question has been created.", reply_markup=start_keys(user_id))
+
+    users = await db.get_category_subscribers(await check_if_string_has_sap(data['category']))
+    users = [user['user_id'] for user in users if user['user_id'] != user_id]
+    count = 0
+    try:
+        for user in users:
+            logging.info(f"SENDING QUESTION TO: {user}")
+            text_to_send = f"Hello. Some user needs an advice on SAP. " \
+                           f"You might be the one who can help.\n\n " \
+                           f"<b>Title:</b>\n{data['title']}\n\n" \
+                           f"<b>Question:</b>\n{data['content']}\n {data['image_url'] if data['image_url'] else ''}"
+            if await send_message(int(user_id), text=text_to_send, reply_markup=answer_question_keys(question_id)):
+                count += 1
+            await asyncio.sleep(.05)
+    finally:
+        logging.info(f"{count} messages sent")
 
 
 @dp.callback_query_handler(text=['questions_create', 'questions_cancel'], state=StartQuestion.review)
