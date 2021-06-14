@@ -13,7 +13,7 @@ from aiogram.utils.exceptions import BotBlocked, UserDeactivated
 from data.config import BOT_TOKEN, PAYMENTS_PROVIDER_TOKEN
 from filters.filters import QuestionCategories
 from handlers.users.subscription import send_message
-from keyboards.inline.keyboard import question_category_keys, question_review_keys, start_keys, \
+from keyboards.inline.keyboard import sap_categories_keys, question_review_keys, start_keys, \
     answer_question_keys, feedback_answer_keys, reply_for_comment_keys, question_payment_keys
 from loader import dp, bot, db, questions_api
 
@@ -90,7 +90,6 @@ async def process_picture(message: Message, state: FSMContext):
     except IndexError:
         image_id = None
     if image_id:
-        await bot.send_message(user_id, message.photo[-1].file_id)
         image_url = await get_image_url(image_id)
         image_base_64 = await image_from_url_to_base64(image_url)
         saved_image_link = await questions_api.get_image_internal_link(image_base_64)
@@ -101,7 +100,7 @@ async def process_picture(message: Message, state: FSMContext):
             data["image_url"] = None
     await StartQuestion.category_state.set()
     await bot.send_chat_action(user_id, action='typing')
-    await bot.send_message(user_id, 'Please, choose a category', reply_markup=await question_category_keys())
+    await bot.send_message(user_id, 'Please, choose a category', reply_markup=await sap_categories_keys("QuestionCategory_"))
 
 
 async def check_if_string_has_sap(string):
@@ -192,7 +191,7 @@ async def cancel_paid_question(call: CallbackQuery, state: FSMContext):
     await state.finish()
     logging.info(f'USER ID {user_id} CANCEL PAID QUESTION')
     await bot.send_message(user_id, text='Job posting has been cancelled.', reply_markup=None)
-    await bot.send_message(user_id, text='Welcome back!', reply_markup=start_keys(user_id))
+    await bot.send_message(user_id, text='Welcome back!', reply_markup=await start_keys(user_id))
 
 
 @dp.pre_checkout_query_handler(lambda query: True, state=StartQuestion.send_invoice)
@@ -225,7 +224,7 @@ async def got_payment(message: types.Message, state: FSMContext):
                              user_email=data['email'],
                              external_user_id=external_user_id)
     await state.finish()
-    await bot.send_message(user_id, "Question has been created.", reply_markup=start_keys(user_id))
+    await bot.send_message(user_id, "Question has been created.", reply_markup=await start_keys(user_id))
 
     users = await db.get_category_subscribers(await check_if_string_has_sap(data['category']))
     users = [user['user_id'] for user in users if user['user_id'] != user_id]
@@ -266,7 +265,7 @@ async def create_question(call: CallbackQuery, state: FSMContext):
                                  external_user_id=external_user_id)
         await state.finish()
         await call.message.edit_reply_markup()
-        await bot.send_message(user_id, "Question has been created.", reply_markup=start_keys(user_id))
+        await bot.send_message(user_id, "Question has been created.", reply_markup=await start_keys(user_id))
         users = await db.get_category_subscribers(await check_if_string_has_sap(data['category']))
         users = [user['user_id'] for user in users if user['user_id'] != user_id]
         for user in users:
@@ -283,7 +282,7 @@ async def create_question(call: CallbackQuery, state: FSMContext):
         logging.info(f'QUESTION MODE: USER ID {user_id} CANCELS QUESTION CREATION')
         await state.finish()
         await call.message.edit_reply_markup()
-        await bot.send_message(user_id, "Main menu", reply_markup=start_keys(user_id))
+        await bot.send_message(user_id, "Main menu", reply_markup=await start_keys(user_id))
 
 
 @rate_limit(5)
@@ -328,7 +327,7 @@ async def process_answer_question(message: Message, state: FSMContext):
     await bot.send_message(user_id, 'Your answer has been posted! Thank you.\n'
                                     'Your points score has been updated.\n'
                                     f'You have {user_points} points now.',
-                           reply_markup=start_keys(user_id))
+                           reply_markup=await start_keys(user_id))
 
 
 @dp.callback_query_handler(Text(startswith='feedback_'))
@@ -343,17 +342,17 @@ async def give_feedback_helpful(call: CallbackQuery, state: FSMContext):
     logging.info(f'QUESTION MODE: USER ID {user_id} GIVES FEEDBACK TO ANSWER {answer_id}')
     if feedback_type == 'helpful':
         await questions_api.vote_answer(user_id=user_mail, post_id=answer_id, vote='1')
-        await bot.send_message(user_id, text='You up voted the answer. Thank you.', reply_markup=start_keys(user_id))
+        await bot.send_message(user_id, text='You up voted the answer. Thank you.', reply_markup=await start_keys(user_id))
         await call.message.edit_reply_markup()
     elif feedback_type == 'unhelpful':
         await questions_api.vote_answer(user_id=user_mail, post_id=answer_id, vote='0')
-        await bot.send_message(user_id, text='You down voted the answer. Thank you.', reply_markup=start_keys(user_id))
+        await bot.send_message(user_id, text='You down voted the answer. Thank you.', reply_markup=await start_keys(user_id))
         await call.message.edit_reply_markup()
     elif feedback_type == 'thebest':
         question_id = await db.get_question_id_by_answer_id(answer_id=answer_id)
         question_id = question_id[0]['question_id']
         await bot.send_message(user_id, text='You set the answer is the best. Thank you.',
-                               reply_markup=start_keys(user_id))
+                               reply_markup=await start_keys(user_id))
         await call.message.edit_reply_markup()
         await questions_api.set_best_answer(question_id=question_id, answer_id=answer_id, user_id=user_mail)
     elif feedback_type == "comment":
@@ -391,7 +390,7 @@ async def process_reply_comment(message: Message, state: FSMContext):
                            reply_markup=reply_for_comment_keys(answer_id, user_id))
     await questions_api.write_comment(answer_id, user_id, comment_content)
     await state.finish()
-    await bot.send_message(user_id, text="Your comment has been sent.", reply_markup=start_keys(user_id))
+    await bot.send_message(user_id, text="Your comment has been sent.", reply_markup=await start_keys(user_id))
 
 
 @dp.message_handler(state=CommentState.write_comment_state)
@@ -410,4 +409,4 @@ async def write_comment(message: Message, state: FSMContext):
     await questions_api.write_comment(answer_id, user_id, comment_content)
     await state.finish()
 
-    await bot.send_message(user_id, text="Your comment has been sent.", reply_markup=start_keys(user_id))
+    await bot.send_message(user_id, text="Your comment has been sent.", reply_markup=await start_keys(user_id))

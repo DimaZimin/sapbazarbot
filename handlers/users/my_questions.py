@@ -37,7 +37,7 @@ async def start_my_questions(call: CallbackQuery, state: FSMContext):
         await MyQuestionsState.question_list_state.set()
     else:
         await call.message.edit_reply_markup()
-        await bot.send_message(user_id, 'You have no questions', reply_markup=start_keys(user_id))
+        await bot.send_message(user_id, 'You have no questions', reply_markup=await start_keys(user_id))
 
 
 @rate_limit(5)
@@ -78,10 +78,10 @@ async def render_question_detail(message: Message, state: FSMContext):
             answers_content = 'There is no answers for this question yet'
 
         await state.finish()
-        await bot.send_message(user_id, text=answers_content, reply_markup=start_keys(user_id))
+        await bot.send_message(user_id, text=answers_content, reply_markup=await start_keys(user_id))
     else:
         await state.finish()
-        await bot.send_message(user_id, text='Wrong index!', reply_markup=start_keys(user_id))
+        await bot.send_message(user_id, text='Wrong index!', reply_markup=await start_keys(user_id))
 
 
 @dp.callback_query_handler(text='dont_select_detail_question', state=MyQuestionsState.question_list_state)
@@ -89,7 +89,7 @@ async def dont_select_question(call: CallbackQuery, state: FSMContext):
     await call.answer(cache_time=60)
     user_id = call.from_user.id
     await state.finish()
-    await bot.send_message(user_id, text='Welcome!', reply_markup=start_keys(user_id))
+    await bot.send_message(user_id, text='Welcome!', reply_markup=await start_keys(user_id))
 
 
 @dp.callback_query_handler(text='all_questions')
@@ -142,7 +142,7 @@ async def answer_question_cancel(call: CallbackQuery, state: FSMContext):
     user_id = call.from_user.id
     await state.finish()
     await call.message.edit_reply_markup()
-    await bot.send_message(user_id, "Hello back!", reply_markup=start_keys(user_id))
+    await bot.send_message(user_id, "Hello back!", reply_markup=await start_keys(user_id))
 
 
 @rate_limit(5)
@@ -174,7 +174,7 @@ async def process_answer_question(message: Message, state: FSMContext):
     await bot.send_message(user_id, 'Your answer has been posted! Thank you. '
                                     'Your points score has been updated.'
                                     f'You have {user_points} points now.',
-                           reply_markup=start_keys(user_id))
+                           reply_markup=await start_keys(user_id))
 
 
 @dp.message_handler(lambda message: not message.text.isdigit() or message.text == '0', state=AllQuestionsState.select_question_state)
@@ -215,7 +215,7 @@ async def check_new_answers_task(wait):
                                      f"for your question {question_title}:\n\n"
                                      f"{answer_content}", reply_markup=reply_for_comment_keys(answer_id, user_id)
                             )
-                            await bot.send_message(user_id, text='Menu', reply_markup=start_keys(user_id))
+                            await bot.send_message(user_id, text='Menu', reply_markup=await start_keys(user_id))
                         except BotBlocked or UserDeactivated:
                             logging.info(f"ANSWER NOT SENT. BOT BLOCKED OR USER DEACTIVATED.")
                             pass
@@ -283,7 +283,7 @@ async def unanswered_questions_task_users(wait_time):
                             if await send_questions_message(int(user), text=text, question=q):
                                 count += 1
                             await asyncio.sleep(.1)
-                        await bot.send_message(int(user), "Menu", reply_markup=start_keys(int(user)))
+                        await bot.send_message(int(user), "Menu", reply_markup=await start_keys(int(user)))
                 finally:
                     logging.info(f"{count} messages sent")
 

@@ -7,7 +7,7 @@ from aiogram import types
 from data.config import PAYMENTS_PROVIDER_TOKEN
 from loader import dp, bot, db, mysql_db
 from states.states import CreateJob
-from keyboards.inline.keyboard import job_post_callback, job_categories_keys, job_locations_keys, \
+from keyboards.inline.keyboard import job_post_callback, sap_categories_keys, job_locations_keys, \
     confirmation_keys, invoice_callback, start_keys, payment_keys
 from filters.filters import JobCategory, JobLocation
 from utils.misc import rate_limit
@@ -71,7 +71,7 @@ async def process_job_description(message: Message, state: FSMContext):
     async with state.proxy() as data:
         data["job_description"] = job_description
     await CreateJob.job_category.set()
-    await bot.send_message(chat_id=user_id, text='Select a job category', reply_markup=await job_categories_keys())
+    await bot.send_message(chat_id=user_id, text='Select a job category', reply_markup=await sap_categories_keys('JP'))
 
 
 @rate_limit(5)
@@ -238,7 +238,7 @@ async def send_invoice(call: CallbackQuery, state: FSMContext):
         await state.finish()
         logging.info(f'USER ID {user_id} JOB POSTED')
         await bot.send_message(chat_id=user_id, text='Success! Your job posting has been created!',
-                               reply_markup=start_keys(user_id))
+                               reply_markup=await start_keys(user_id))
 
 
 @dp.callback_query_handler(invoice_callback.filter(confirm='no'), state=CreateJob.send_invoice)
@@ -249,7 +249,7 @@ async def cancel_posting(call: CallbackQuery, state: FSMContext):
     await state.finish()
     await call.message.delete_reply_markup()
     logging.info(f'USER ID {user_id} CANCEL JOB POSTING')
-    await bot.send_message(user_id, text='Welcome back!', reply_markup=start_keys(user_id))
+    await bot.send_message(user_id, text='Welcome back!', reply_markup=await start_keys(user_id))
 
 
 @dp.callback_query_handler(text='cancel_payment', state=CreateJob.checkout)
@@ -260,7 +260,7 @@ async def cancel_payment(call: CallbackQuery, state: FSMContext):
     await state.finish()
     logging.info(f'USER ID {user_id} CANCELLED PAYMENT')
     await bot.send_message(user_id, text='Job posting has been cancelled.', reply_markup=None)
-    await bot.send_message(user_id, text='Welcome back!', reply_markup=start_keys(user_id))
+    await bot.send_message(user_id, text='Welcome back!', reply_markup=await start_keys(user_id))
 
 
 @dp.pre_checkout_query_handler(lambda query: True, state=CreateJob.checkout)
@@ -298,4 +298,4 @@ async def got_payment(message: types.Message, state: FSMContext):
                            'We will proceed your order for `{} {}`'
                            ' as fast as possible! Stay in touch.'.format(
                                message.successful_payment.total_amount / 100, message.successful_payment.currency),
-                           parse_mode='Markdown', reply_markup=start_keys(user_id))
+                           parse_mode='Markdown', reply_markup=await start_keys(user_id))

@@ -89,3 +89,21 @@ class CommentState(StatesGroup):
 class ReplyCommentState(StatesGroup):
 
     reply_to_state = State()
+
+
+class PaidConsultationState(StatesGroup):
+    budget_state = State()
+    category_state = State()
+    content_state = State()
+    picture_state = State()
+    contact_state = State()
+    review = State()
+
+
+class AssistanceState(StatesGroup):
+    contact_details_state = State()
+
+
+class PayConsultationFees(StatesGroup):
+    payment_state = State()
+    checkout = State()

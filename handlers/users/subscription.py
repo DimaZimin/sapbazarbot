@@ -6,8 +6,8 @@ from aiogram.dispatcher.filters import Command
 from aiogram.utils.exceptions import BotBlocked, RetryAfter, UserDeactivated, ChatNotFound, TelegramAPIError
 from aiogram.types import CallbackQuery, Message
 from filters.filters import SubscriptionCategories, SubscriptionLocations
-from keyboards.inline.keyboard import start_subscription, subscription_category_keys, \
-    subscription_locations_keys, blog_sub, start_keys_unsubscribe
+from keyboards.inline.keyboard import start_subscription, sap_categories_keys, \
+    subscription_locations_keys, blog_sub
 
 from states.states import Form
 from keyboards.inline.keyboard import start_keys
@@ -57,7 +57,7 @@ async def process_subscription(call: CallbackQuery):
     await db.add_user(user_id, name)
     logging.info(f'USER ID: {user_id} CHOOSING CATEGORIES')
     await call.message.answer('Please select a SAP category',
-                              reply_markup=await subscription_category_keys())
+                              reply_markup=await sap_categories_keys())
     await call.message.edit_reply_markup()
 
 
@@ -76,7 +76,7 @@ async def choose_category(call: CallbackQuery):
         logging.info(f'CHAT ID: {user_id} CHOOSING LOCATION')
         await Form.state.set()
         await call.message.edit_reply_markup()
-        await db.update_user(user_id=user_id, location="Remote")
+        await db.update_user(user_id=user_id, location="Remote", is_mentor=True)
         await call.message.answer(f'Do you want to subscribe to the SAP blog?', reply_markup=blog_sub())
 
     elif call.data == 'next' and not user_categories:
@@ -84,7 +84,7 @@ async def choose_category(call: CallbackQuery):
         await call.message.edit_reply_markup()
         await call.message.answer(f'You have not chosen any category yet. First, choose a category '
                                   f'and then press Next button',
-                                  reply_markup=await subscription_category_keys())
+                                  reply_markup=await sap_categories_keys())
     else:
         callback_data = (call.message.text, call.message.chat.id)
         logging.info(f'CATEGORY UPDATE: {callback_data[1]}')
@@ -95,7 +95,7 @@ async def choose_category(call: CallbackQuery):
         await call.message.edit_reply_markup()
         await call.message.answer(f'{category} category has been selected. Select another '
                                   f'category or press the "Next" button',
-                                  reply_markup=await subscription_category_keys())
+                                  reply_markup=await sap_categories_keys())
 
 
 @rate_limit(5)
@@ -114,7 +114,7 @@ async def subscribe_on_blog(call: CallbackQuery, state: FSMContext):
     logging.info(f"USER {user_id} SUBSCRIBED FOR JOB ALERT")
     await state.finish()
     await call.message.answer(f'You have successfully subscribed for job alert!',
-                              reply_markup=start_keys_unsubscribe(user_id))
+                              reply_markup=await start_keys(user_id))
 
 
 @rate_limit(5)
@@ -123,11 +123,11 @@ async def unsubscribe_from_job_alert(call: CallbackQuery):
     await call.answer(cache_time=60)
     user_id = call.from_user.id
     await db.delete_user_subscription(user_id)
-    await db.update_user(user_id, job_subscription='False')
+    await db.update_user(user_id, job_subscription='False', is_mentor=False)
     logging.info(f'USER ID: {user_id} UNSUBSCRIBED FROM JOB ALERT')
     await call.message.edit_reply_markup()
     await bot.send_message(user_id, "You have successfully unsubscribed from job alert.\n"
-                                    "Thank you for choosing our service", reply_markup=start_keys(user_id))
+                                    "Thank you for choosing our service", reply_markup=await start_keys(user_id))
 
 
 @rate_limit(5)
@@ -202,7 +202,7 @@ async def blog_task(wait_time):
                         logging.info(f"SENDING URL TO: {subscriber}")
                         text_to_send = f'<a href="{post_url}"> Hey! We got a new post here! Check this out.</a>'
                         user_id = subscriber['user_id']
-                        if await send_message(int(user_id), text=text_to_send, reply_markup=start_keys(user_id)):
+                        if await send_message(int(user_id), text=text_to_send, reply_markup=await start_keys(user_id)):
                             count += 1
                         await asyncio.sleep(.05)
                 finally:
@@ -260,7 +260,7 @@ async def points_task(wait_time):
             try:
                 for user in all_users:
                     user_id = user['user_id']
-                    if await send_message(int(user_id), text=text_to_send, reply_markup=start_keys(user_id)):
+                    if await send_message(int(user_id), text=text_to_send, reply_markup=await start_keys(user_id)):
                         count += 1
                     await asyncio.sleep(.05)
             finally:

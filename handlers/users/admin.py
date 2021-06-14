@@ -155,7 +155,7 @@ async def admin_main_menu(call: CallbackQuery):
     logging.info(f"ADMIN {user_id} BACK TO MAIN MENU")
     await call.message.edit_reply_markup()
     await bot.send_message(chat_id=user_id,
-                           text='Main panel', reply_markup=start_keys(user_id))
+                           text='Main panel', reply_markup=await start_keys(user_id))
 
 
 @dp.callback_query_handler(text='payable')
@@ -171,7 +171,7 @@ async def make_payable(call: CallbackQuery):
         await db.payable_post('True')
         status = 'payable'
     await call.message.edit_reply_markup()
-    await bot.send_message(chat_id=user_id, text=f'Your job posting set to {status}', reply_markup=start_keys(user_id))
+    await bot.send_message(chat_id=user_id, text=f'Your job posting set to {status}', reply_markup=await start_keys(user_id))
 
 
 @dp.callback_query_handler(text='mass_message')
@@ -222,7 +222,7 @@ async def send_mass_message_to_users(message: Message, state: FSMContext):
     count = 0
     try:
         for user in subscribers:
-            if await send_message(int(user), text=message.text, reply_markup=start_keys(user_id)):
+            if await send_message(int(user), text=message.text, reply_markup=await start_keys(user_id)):
                 count += 1
             await asyncio.sleep(.05)
     finally:

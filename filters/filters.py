@@ -51,3 +51,21 @@ class QuestionCategories(BoundFilter):
 class AnswerQuestionID(BoundFilter):
     async def check(self, call: types.CallbackQuery) -> bool:
         return call.data.split('AnswerQuestion_')[0]
+
+
+class PaidConsultationCategories(BoundFilter):
+    async def check(self, call: types.CallbackQuery) -> bool:
+        categories = [category['category_name'] for category in await db.fetch_value('category_name', 'Categories')]
+        return call.data.split('CO')[1] in categories
+
+
+class PaidConsultationRequest(BoundFilter):
+    async def check(self, call: types.CallbackQuery) -> bool:
+        callback_data = "confirm_paid_request_"
+        return call.data.startswith(callback_data)
+
+
+class ChargeConsultationRequest(BoundFilter):
+    async def check(self, call: types.CallbackQuery) -> bool:
+        callback_data = "paid_consultation_confirm_"
+        return call.data.startswith(callback_data)

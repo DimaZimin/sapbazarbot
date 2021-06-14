@@ -10,9 +10,10 @@ from loader import dp, bot, db
 # This is the text message that bot sends after /start command has been activated.
 from utils.misc import rate_limit
 
-START_TEXT = "You can subscribe to new SAP job openings via SAP Bazar BOT. " \
-             "Sign up to receive new job alerts straight to this chat. " \
-             "You can select all the categories you are interested in by pressing 'Subscribe'"
+START_TEXT = "SAPGuru is a service providing instant one-on-one help for sap consultants and developers by telegram " \
+             "in order to replicate for users the experience of having a sap mentor for sap consulting, " \
+             "sap programming. Create a request for sap mentors for getting help with any sap problem or " \
+             "Subscribe as SAP Mentor to get paid while making an impact"
 
 
 @rate_limit(5, 'start')
@@ -30,4 +31,4 @@ async def start(message: types.Message):
     user_id = message.from_user.id
     await db.add_user(user_id, name)
     await message.answer(text=f"Hello, {name}!\n" + START_TEXT,
-                         reply_markup=start_keys(message.chat.id))
+                         reply_markup=await start_keys(message.chat.id))

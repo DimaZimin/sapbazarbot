@@ -23,6 +23,7 @@ class Database:
         user_id INT NOT NULL,
         name VARCHAR(255),
         email VARCHAR(255) UNIQUE,
+        is_mentor BOOLEAN,
         job_subscription BOOLEAN NOT NULL,
         blog_subscription BOOLEAN NOT NULL,
         location VARCHAR(255),
@@ -105,6 +106,32 @@ class Database:
         post_id VARCHAR(255),
         user_mail VARCHAR(255)
         );
+        """
+        await self.pool.execute(sql)
+
+    async def create_table_consultations(self):
+        sql = """
+        CREATE TABLE IF NOT EXISTS consultation_requests (
+        id SERIAL PRIMARY KEY,
+        user_id BIGINT NOT NULL,
+        budget INT,
+        content TEXT,
+        image_url VARCHAR(1023),
+        category VARCHAR(255),
+        contact VARCHAR(255),
+        closed BOOLEAN NOT NULL DEFAULT FALSE
+        );
+        """
+        await self.pool.execute(sql)
+
+    async def create_table_assistants(self):
+        sql = """
+        CREATE TABLE IF NOT EXISTS assistants (
+        user_id BIGINT NOT NULL,
+        name VARCHAR(255),
+        contact VARCHAR(255),
+        request INT REFERENCES consultation_requests(id)
+        )
         """
         await self.pool.execute(sql)
 
@@ -368,3 +395,85 @@ class Database:
         SELECT external_user_id FROM questions WHERE user_mail = $1
         """
         return await self.pool.fetchval(sql, email)
+
+    async def is_mentor(self, user_id):
+        sql = """
+        SELECT is_mentor FROM users WHERE user_id = $1
+        """
+        value = await self.pool.fetchval(sql, user_id)
+        return True if value else False
+
+    async def select_mentors_for_category(self, category):
+        sql = """
+        SELECT s.user_id FROM subscriptions s LEFT JOIN users u ON s.user_id = u.user_id 
+        WHERE s.category = $1 AND u.is_mentor = true
+        """
+        return await self.pool.fetch(sql, category)
+
+    async def select_all_mentors(self):
+        sql = """
+        SELECT user_id FROM users WHERE is_mentor = true
+        """
+        return await self.pool.fetch(sql)
+
+    async def create_consultation_record(self, user_id, budget, content, image_url, category, contact):
+        sql = """
+        INSERT INTO consultation_requests(user_id, budget, content, image_url, category, contact) 
+        VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;
+        """
+        return await self.pool.fetchrow(sql, user_id, budget, content, image_url, category, contact)
+
+    async def assign_assistance(self, assistant_id, name, contact, request_id):
+        sql = """
+        INSERT INTO assistants(user_id, name, contact, request)
+        VALUES ($1, $2, $3, $4) RETURNING request;
+        """
+        return await self.pool.fetchrow(sql, assistant_id, name, contact, request_id)
+
+    async def get_consultation_record(self, record_id):
+        sql = """
+        SELECT * FROM consultation_requests WHERE id = $1;
+        """
+        return await self.pool.fetchrow(sql, record_id)
+
+    async def get_assistant(self, request_id):
+        sql = """
+        SELECT * FROM assistants WHERE request = $1;
+        """
+        return await self.pool.fetchrow(sql, request_id)
+
+    async def get_requests_for_client(self, user_id):
+        sql = """
+        SELECT * from consultation_requests WHERE user_id = $1 AND closed = false;
+        """
+        return await self.pool.fetch(sql, user_id)
+
+    async def get_assigned_requests(self, user_id):
+        sql = """
+        SELECT * from assistants WHERE user_id = $1
+        """
+        return await self.pool.fetch(sql, user_id)
+
+    async def mark_request_as_paid(self, request_id):
+        sql = """
+        UPDATE consultation_requests SET paid = TRUE WHERE id = $1 RETURNING id, paid;
+        """
+        return await self.pool.fetch(sql, request_id)
+
+    async def close_request(self, request_id):
+        sql = """
+        UPDATE consultation_requests SET closed = TRUE WHERE id = $1;
+        """
+        return await self.pool.execute(sql, request_id)
+
+    async def mark_request_as_resolved_by_client(self, request_id):
+        sql = """
+        UPDATE consultation_requests SET resolved_client = TRUE WHERE id = $1;
+        """
+        return await self.pool.execute(sql, request_id)
+
+    async def mark_request_as_resolved_by_consultant(self, request_id):
+        sql = """
+        UPDATE consultation_requests SET resolved_consultant = TRUE WHERE id = $1 RETURNING user_id, resolved_client;
+        """
+        return await self.pool.fetchrow(sql, request_id)
