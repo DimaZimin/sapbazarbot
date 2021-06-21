@@ -6,6 +6,7 @@ from aiogram.dispatcher.filters import Command
 from aiogram.utils.exceptions import BotBlocked, RetryAfter, UserDeactivated, ChatNotFound, TelegramAPIError
 from aiogram.types import CallbackQuery, Message
 from filters.filters import SubscriptionCategories, SubscriptionLocations
+from handlers.users.tools import try_send_message
 from keyboards.inline.keyboard import start_subscription, sap_categories_keys, \
     subscription_locations_keys, blog_sub
 
@@ -14,35 +15,6 @@ from keyboards.inline.keyboard import start_keys
 from loader import dp, db, bot, json_db, questions_api
 from utils.parsers import parsers
 from utils.misc import rate_limit
-
-
-async def send_message(user_id: int, text: str, disable_notification: bool = False, reply_markup=None) -> bool:
-    """
-    Safe messages sender
-    :param user_id:
-    :param text:
-    :param disable_notification:
-    :param reply_markup:
-    :return:
-    """
-    try:
-        await bot.send_message(user_id, text, disable_notification=disable_notification, reply_markup=reply_markup)
-    except BotBlocked:
-        logging.error(f"Target [ID:{user_id}]: blocked by user")
-    except ChatNotFound:
-        logging.error(f"Target [ID:{user_id}]: invalid user ID")
-    except RetryAfter as e:
-        logging.error(f"Target [ID:{user_id}]: Flood limit is exceeded. Sleep {e.timeout} seconds.")
-        await asyncio.sleep(e.timeout)
-        return await send_message(user_id, text)  # Recursive call
-    except UserDeactivated:
-        logging.error(f"Target [ID:{user_id}]: user is deactivated")
-    except TelegramAPIError:
-        logging.exception(f"Target [ID:{user_id}]: failed")
-    else:
-        logging.info(f"Target [ID:{user_id}]: success")
-        return True
-    return False
 
 
 @rate_limit(5)
@@ -55,15 +27,31 @@ async def process_subscription(call: CallbackQuery):
     user_id = int(call.from_user.id)
     name = f"{call.from_user.first_name} {call.from_user.last_name}"
     await db.add_user(user_id, name)
-    logging.info(f'USER ID: {user_id} CHOOSING CATEGORIES')
-    await call.message.answer('Please select a SAP category',
-                              reply_markup=await sap_categories_keys())
+    await Form.about_state.set()
+    logging.info(f'USER ID: {user_id} -> consultant_experience_description()')
+    await call.message.answer('Please, describe your experience in SAP in a few sentences.')
     await call.message.edit_reply_markup()
 
 
 @rate_limit(5)
-@dp.callback_query_handler(SubscriptionCategories())
-async def choose_category(call: CallbackQuery):
+@dp.message_handler(state=Form.about_state)
+async def consultant_experience_description(message: Message, state: FSMContext):
+    description = message.text
+    async with state.proxy() as data:
+        data['description'] = description
+    await db.create_or_update_consultant(
+        user_id=message.from_user.id,
+        name=message.from_user.first_name,
+        last_name=message.from_user.last_name,
+        exp=description
+    )
+    await Form.categories_state.set()
+    await message.answer('Thank you. Now, please select SAP category', reply_markup=await sap_categories_keys())
+
+
+@rate_limit(5)
+@dp.callback_query_handler(SubscriptionCategories(), state=Form.categories_state)
+async def choose_category(call: CallbackQuery, state: FSMContext):
     """
 
     Callback query handler catches name of a category. Categories are stored in keyboard.py CATEGORIES variable.
@@ -74,7 +62,7 @@ async def choose_category(call: CallbackQuery):
 
     if call.data == 'next' and user_categories:
         logging.info(f'CHAT ID: {user_id} CHOOSING LOCATION')
-        await Form.state.set()
+        await Form.blog_subscription_state.set()
         await call.message.edit_reply_markup()
         await db.update_user(user_id=user_id, location="Remote", is_mentor=True)
         await call.message.answer(f'Do you want to subscribe to the SAP blog?', reply_markup=blog_sub())
@@ -99,7 +87,7 @@ async def choose_category(call: CallbackQuery):
 
 
 @rate_limit(5)
-@dp.callback_query_handler(text=['yes', 'no'], state=Form.state)
+@dp.callback_query_handler(text=['yes', 'no'], state=Form.blog_subscription_state)
 async def subscribe_on_blog(call: CallbackQuery, state: FSMContext):
     await call.answer(cache_time=60)
     user_id = call.from_user.id
@@ -202,7 +190,7 @@ async def blog_task(wait_time):
                         logging.info(f"SENDING URL TO: {subscriber}")
                         text_to_send = f'<a href="{post_url}"> Hey! We got a new post here! Check this out.</a>'
                         user_id = subscriber['user_id']
-                        if await send_message(int(user_id), text=text_to_send, reply_markup=await start_keys(user_id)):
+                        if await try_send_message(int(user_id), text=text_to_send, reply_markup=await start_keys(user_id)):
                             count += 1
                         await asyncio.sleep(.05)
                 finally:
@@ -260,7 +248,7 @@ async def points_task(wait_time):
             try:
                 for user in all_users:
                     user_id = user['user_id']
-                    if await send_message(int(user_id), text=text_to_send, reply_markup=await start_keys(user_id)):
+                    if await try_send_message(int(user_id), text=text_to_send, reply_markup=await start_keys(user_id)):
                         count += 1
                     await asyncio.sleep(.05)
             finally:

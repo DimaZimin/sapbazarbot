@@ -23,7 +23,7 @@ async def start_keys(admin_id):
                                         callback_data=start_subscription.new(action='subscribe')))
     else:
         markup.insert(InlineKeyboardButton(text="❌ Unsubscribe", callback_data="unsubscribe"))
-    markup.insert(InlineKeyboardButton(text="Create request", callback_data='create_request'))
+    markup.insert(InlineKeyboardButton(text="🙋 Requests", callback_data='create_request'))
     # markup.insert(InlineKeyboardButton(text='🙋 My questions', callback_data='my_questions'))
     # markup.insert(InlineKeyboardButton(text='See all questions', callback_data='all_questions'))
     markup.insert(InlineKeyboardButton(text="✉️ Contact", url='telegram.me/gurusap'))
@@ -36,7 +36,7 @@ async def start_keys(admin_id):
 async def create_request_keys() -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup(row_width=1)
     markup.insert(
-        InlineKeyboardButton(text='Get paid consultation from professionals',callback_data='paid_consultation'))
+        InlineKeyboardButton(text='Paid consultation',callback_data='paid_consultation'))
     markup.insert(
         InlineKeyboardButton(text='My requests', callback_data='my_requests'))
     markup.insert(InlineKeyboardButton(text='❓ Ask question for free', callback_data='ask_question'))
@@ -212,7 +212,7 @@ def get_questions_keys() -> InlineKeyboardMarkup:
 async def accept_consultation_request(request_id) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
     markup.insert(InlineKeyboardButton(text='Assist', callback_data=f'confirm_paid_request_{request_id}'))
-    markup.insert(InlineKeyboardButton(text='Cancel', callback_data='reject_paid_consultation'))
+    markup.insert(InlineKeyboardButton(text='Not interested', callback_data='reject_paid_consultation'))
     return markup
 
 
@@ -245,11 +245,11 @@ async def confirm_paid_consultation_request() -> InlineKeyboardMarkup:
     return markup
 
 
-async def charge_paid_consultation_keys(request_id) -> InlineKeyboardMarkup:
+async def charge_paid_consultation_keys(request_id, consultant_id) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
-    markup.insert(InlineKeyboardButton('Confirm and proceed with payment',
+    markup.insert(InlineKeyboardButton('Confirm',
                                        callback_data=f'paid_consultation_confirm_{request_id}'))
-    markup.insert(InlineKeyboardButton('Cancel', callback_data='paid_consultation_cancel'))
+    markup.insert(InlineKeyboardButton('Reject', callback_data=f'paid_consultation_reject_{request_id}_{consultant_id}'))
     return markup
 
 
@@ -272,4 +272,11 @@ async def user_requests_keys(request_id) -> InlineKeyboardMarkup:
 async def assigned_requests_keys(request_id) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup(row_width=2)
     markup.insert(InlineKeyboardButton('Resolved', callback_data=f'cons_request_resolved_{request_id}'))
+    return markup
+
+
+async def notification_resolve_request_keys(request_id) -> InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup(row_width=2)
+    markup.insert(InlineKeyboardButton('Resolved', callback_data=f'client_request_resolved_{request_id}'))
+    markup.insert(InlineKeyboardButton('Contact', url='telegram.me/gurusap'))
     return markup

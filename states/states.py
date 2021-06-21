@@ -11,7 +11,9 @@ class JobCreation(StatesGroup):
 
 class Form(StatesGroup):
 
-    state = State()
+    about_state = State()
+    categories_state = State()
+    blog_subscription_state = State()
 
 
 class CreateJob(StatesGroup):

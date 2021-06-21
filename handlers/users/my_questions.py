@@ -7,6 +7,7 @@ from aiogram.types import CallbackQuery, Message
 from aiogram.utils.exceptions import BotBlocked, UserDeactivated, ChatNotFound, RetryAfter, TelegramAPIError
 from aiogram.utils.parts import split_text
 
+from handlers.users.tools import try_send_message
 from keyboards.inline.keyboard import start_keys, select_question_keys, answer_question_keys, \
     answer_question_direct_keys, reply_for_comment_keys
 from loader import dp, bot, db, questions_api, json_answers
@@ -283,7 +284,7 @@ async def unanswered_questions_task_users(wait_time):
                             if await send_questions_message(int(user), text=text, question=q):
                                 count += 1
                             await asyncio.sleep(.1)
-                        await bot.send_message(int(user), "Menu", reply_markup=await start_keys(int(user)))
+                        await try_send_message(int(user), "Menu", reply_markup=await start_keys(int(user)))
                 finally:
                     logging.info(f"{count} messages sent")
 

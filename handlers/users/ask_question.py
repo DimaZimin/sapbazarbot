@@ -12,7 +12,7 @@ from aiogram.types import CallbackQuery, Message, ContentTypes
 from aiogram.utils.exceptions import BotBlocked, UserDeactivated
 from data.config import BOT_TOKEN, PAYMENTS_PROVIDER_TOKEN
 from filters.filters import QuestionCategories
-from handlers.users.subscription import send_message
+from handlers.users.tools import try_send_message
 from keyboards.inline.keyboard import sap_categories_keys, question_review_keys, start_keys, \
     answer_question_keys, feedback_answer_keys, reply_for_comment_keys, question_payment_keys
 from loader import dp, bot, db, questions_api
@@ -100,7 +100,8 @@ async def process_picture(message: Message, state: FSMContext):
             data["image_url"] = None
     await StartQuestion.category_state.set()
     await bot.send_chat_action(user_id, action='typing')
-    await bot.send_message(user_id, 'Please, choose a category', reply_markup=await sap_categories_keys("QuestionCategory_"))
+    await bot.send_message(user_id, 'Please, choose a category',
+                           reply_markup=await sap_categories_keys("QuestionCategory_"))
 
 
 async def check_if_string_has_sap(string):
@@ -236,7 +237,7 @@ async def got_payment(message: types.Message, state: FSMContext):
                            f"You might be the one who can help.\n\n " \
                            f"<b>Title:</b>\n{data['title']}\n\n" \
                            f"<b>Question:</b>\n{data['content']}\n {data['image_url'] if data['image_url'] else ''}"
-            if await send_message(int(user_id), text=text_to_send, reply_markup=answer_question_keys(question_id)):
+            if await try_send_message(int(user_id), text=text_to_send, reply_markup=answer_question_keys(question_id)):
                 count += 1
             await asyncio.sleep(.05)
     finally:
@@ -342,11 +343,13 @@ async def give_feedback_helpful(call: CallbackQuery, state: FSMContext):
     logging.info(f'QUESTION MODE: USER ID {user_id} GIVES FEEDBACK TO ANSWER {answer_id}')
     if feedback_type == 'helpful':
         await questions_api.vote_answer(user_id=user_mail, post_id=answer_id, vote='1')
-        await bot.send_message(user_id, text='You up voted the answer. Thank you.', reply_markup=await start_keys(user_id))
+        await bot.send_message(user_id, text='You up voted the answer. Thank you.',
+                               reply_markup=await start_keys(user_id))
         await call.message.edit_reply_markup()
     elif feedback_type == 'unhelpful':
         await questions_api.vote_answer(user_id=user_mail, post_id=answer_id, vote='0')
-        await bot.send_message(user_id, text='You down voted the answer. Thank you.', reply_markup=await start_keys(user_id))
+        await bot.send_message(user_id, text='You down voted the answer. Thank you.',
+                               reply_markup=await start_keys(user_id))
         await call.message.edit_reply_markup()
     elif feedback_type == 'thebest':
         question_id = await db.get_question_id_by_answer_id(answer_id=answer_id)

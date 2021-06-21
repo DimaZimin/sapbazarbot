@@ -130,7 +130,7 @@ class Database:
         user_id BIGINT NOT NULL,
         name VARCHAR(255),
         contact VARCHAR(255),
-        request INT REFERENCES consultation_requests(id)
+        request INT REFERENCES consultation_requests(id) ON DELETE CASCADE
         )
         """
         await self.pool.execute(sql)
@@ -161,7 +161,11 @@ class Database:
         try:
             await self.pool.execute(sql, user_id, name, email, job_subscription, blog_subscription)
         except UniqueViolationError:
-            pass
+            sql = """
+            UPDATE Users SET name = $2, email = $3, job_subscription = $4, blog_subscription = $5
+            WHERE user_id = $1;
+            """
+            await self.pool.execute(sql, user_id, name, email, job_subscription, blog_subscription)
 
     async def select_user(self, location, category):
         sql = f"""
@@ -477,3 +481,33 @@ class Database:
         UPDATE consultation_requests SET resolved_consultant = TRUE WHERE id = $1 RETURNING user_id, resolved_client;
         """
         return await self.pool.fetchrow(sql, request_id)
+
+    async def create_or_update_consultant(self, user_id, name, last_name, exp):
+        sql = """
+        INSERT INTO consultants (user_id, name, last_name, about) VALUES ($1, $2, $3, $4)
+        """
+        try:
+            return await self.pool.execute(sql, user_id, name, last_name, exp)
+        except UniqueViolationError:
+            sql = """
+            UPDATE consultants SET name = $2, last_name = $3, about = $4 WHERE user_id = $1;
+            """
+            return await self.pool.execute(sql, user_id, name, last_name, exp)
+
+    async def get_consultant_experience(self, user_id):
+        sql = """
+        SELECT about FROM consultants WHERE user_id = $1;
+        """
+        return await self.pool.fetchval(sql, user_id)
+
+    async def remove_assistance_record(self, request, user_id):
+        sql = """
+        DELETE FROM assistants WHERE request = $1 AND user_id = $2;
+        """
+        return await self.pool.execute(sql, request, user_id)
+
+    async def delete_consultation_record(self, request):
+        sql = """
+        DELETE FROM consultation_requests WHERE id = $1;
+        """
+        return await self.pool.execute(sql, request)

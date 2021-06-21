@@ -1,29 +1,17 @@
 import asyncio
 import logging
 
-from aiogram import types
-from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
-from aiogram.utils.exceptions import ChatNotFound
-from aiogram.types import CallbackQuery, Message, ContentTypes
+from aiogram.types import CallbackQuery
 
-from data.config import PAYMENTS_PROVIDER_TOKEN
-from filters.filters import PaidConsultationCategories, PaidConsultationRequest, ChargeConsultationRequest
-from handlers.users.admin import send_message
+from handlers.users.tools import try_send_message
 from keyboards.inline.keyboard import (
-    create_request_keys,
-    sap_categories_keys,
-    charge_paid_consultation_keys,
-    consultation_payment_keys,
-    confirm_paid_consultation_request,
-    accept_consultation_request, user_requests_keys, assigned_requests_keys
+    user_requests_keys, assigned_requests_keys, notification_resolve_request_keys,
 )
 
-from states.states import PaidConsultationState, AssistanceState, PayConsultationFees
 from keyboards.inline.keyboard import start_keys
-from loader import dp, db, bot, questions_api
+from loader import dp, db, bot
 from utils.misc import rate_limit
-from handlers.users.ask_question import get_image_url, image_from_url_to_base64
 
 
 @rate_limit(5)
@@ -35,8 +23,6 @@ async def my_requests_starter(call: CallbackQuery):
     assigned_requests = await db.get_assigned_requests(user_id)
 
     if user_requests:
-        if len(user_requests) > 3:
-            user_requests = user_requests[-3:]
         await send_list_of_requests_to_user(user_id, user_requests)
     else:
         await bot.send_message(
@@ -66,21 +52,31 @@ async def send_list_of_requests_to_user(user_id, user_requests):
         request_id = request['id']
         assistant_record = await db.get_assistant(request_id=request_id)
         if not assistant_record:
-            assistant_contact = 'No assigned consultant'
-            assistant_name = 'No assigned consultant'
+            await bot.send_message(user_id,
+                                   text=f"<b>Request {request_id}</b>\n\n"
+                                        f"<b>Category:</b> {request['category']}\n\n"
+                                        f"<b>Budget:</b> {request['budget']}\n\n"
+                                        f"No consultant has been assigned yet",
+                                   reply_markup=await user_requests_keys(request_id)
+                                   )
+            await bot.send_chat_action(user_id, 'typing')
+            await asyncio.sleep(.5)
         else:
             assistant_contact = assistant_record['contact']
             assistant_name = assistant_record['name']
-        await bot.send_message(user_id,
-                               text=f"Request {request_id}\n\n"
-                                    f"Category: {request['category']}\n\n"
-                                    f"Budget: {request['budget']}\n\n"
-                                    f"Consultant: {assistant_name}\n\n"
-                                    f"Contact: {assistant_contact}",
-                               reply_markup=await user_requests_keys(request_id)
-                               )
-        await bot.send_chat_action(user_id, 'typing')
-        await asyncio.sleep(.5)
+            assistant_chat = await bot.get_chat(assistant_record['user_id'])
+            await bot.send_message(user_id,
+                                   text=f"<b>Request #{request_id}</b>\n\n"
+                                        f"<b>Category:</b> {request['category']}\n"
+                                        f"<b>Budget:</b> {request['budget']}\n"
+                                        f"<b>Consultant:</b> {assistant_name}\n"
+                                        f"<b>Telegram link:</b> {assistant_chat.user_url}\n"
+                                        f"<b>Contact:</b> {assistant_contact}",
+                                   reply_markup=await user_requests_keys(request_id),
+                                   parse_mode='HTML'
+                                   )
+            await bot.send_chat_action(user_id, 'typing')
+            await asyncio.sleep(.5)
 
 
 async def send_list_of_assigned_request_to_consultant(user_id, assigned_requests):
@@ -126,9 +122,47 @@ async def mark_request_as_resolved_by_consultant(call: CallbackQuery):
                  "We're sending him notification right now. Once the request will be approved "
                  "you will receive your compensation.",
             reply_markup=await start_keys(user_id))
+        await send_notification_about_completion_of_the_request(request_id, requester_id, user_id)
     else:
         await bot.send_message(
             user_id,
-            text="Good job! You will receive compensation shortly"
+            text="Good job! To open main menu press /start",
         )
-    # TODO: send notification to client, ask consultant provide bank details
+
+
+async def send_notification_about_completion_of_the_request(request, user_id, consultant_id):
+    user = await bot.get_chat(user_id)
+    consultant = await bot.get_chat(consultant_id)
+    text = f"Hello, {user.first_name}. We're writing you because consultant {consultant.full_name} marked request id:{request}" \
+           f" as resolved. In order to close this request successfully, please press 'Resolved' button below. If you" \
+           f"have any problems or remarks, please contact our support service."
+    if await try_send_message(user_id, text, reply_markup=await notification_resolve_request_keys(request)):
+        logging.info(f"RESOLVED REQUEST #{request} NOTIFICATION SENT TO {user_id} SUCCESSFULLY")
+    else:
+        logging.info(f"UNABLE TO SEND RESOLVED REQUEST #{request} NOTIFICATION TO {user_id}")
+
+
+@dp.callback_query_handler(Text(startswith='client_request_resolved_'))
+async def resolve_request_by_requester(call: CallbackQuery):
+    await call.answer(cache_time=60)
+    user = call.from_user.id
+    request_id = int(call.data.replace("client_request_resolved_", ""))
+    await db.mark_request_as_resolved_by_client(request_id)
+    await db.close_request(request_id)
+    await bot.send_message(
+        user, 'Thank you for using our service.', reply_markup=await start_keys(user)
+    )
+
+    consultant_record = await db.get_assistant(request_id)
+    if consultant_record:
+        consultation_request_id = consultant_record['request']
+        consultant_id = consultant_record['user_id']
+        consultant = await bot.get_chat(
+            consultant_id
+        )
+        await bot.send_message(
+            consultant_id,
+            text=f"Good job, {consultant.first_name}! Request #{consultation_request_id} "
+                 f"marked as resolved. Thank you for your assistance.",
+            reply_markup=await start_keys(consultant_id)
+        )
