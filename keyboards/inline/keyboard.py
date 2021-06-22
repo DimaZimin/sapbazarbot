@@ -35,32 +35,14 @@ async def start_keys(admin_id):
 
 async def create_request_keys() -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.insert(
-        InlineKeyboardButton(text='Paid consultation',callback_data='paid_consultation'))
-    markup.insert(
-        InlineKeyboardButton(text='My requests', callback_data='my_requests'))
+    markup.insert(InlineKeyboardButton(text='Paid consultation', callback_data='paid_consultation'))
     markup.insert(InlineKeyboardButton(text='❓ Ask question for free', callback_data='ask_question'))
-    markup.insert(InlineKeyboardButton(text="💼 Post a Job", callback_data=job_post_callback.new(posting='start')))
+    markup.insert(InlineKeyboardButton(text="💼 Post full time project",
+                                       callback_data=job_post_callback.new(posting='start')))
+    markup.insert(InlineKeyboardButton(text='My created requests', callback_data='my_requests'))
+    markup.insert(InlineKeyboardButton(text='My assigned tasks', callback_data='assigned_tasks'))
     markup.insert(InlineKeyboardButton(text='Back to main menu', callback_data='back_to_menu'))
     return markup
-
-
-# async def subscription_category_keys() -> InlineKeyboardMarkup:
-#     """
-#     Inline keyboard that includes all available categories. This keyboard pops up after pressing "Subscribe" button.
-#     CATEGORIES can be expanded by adding a category name to CATEGORY list namespace.
-#     Make sure that added category is exactly the same as it is on the website, including the font case,
-#     as it is case sensitive.
-#     !!!IMPORTANT!!! DO NOT REMOVE 'Next' at the end of the list. Keep it there for convenience!!!
-#     """
-#     markup = InlineKeyboardMarkup(row_width=2)
-#     categories = [category['category_name'] for category in
-#                   await db.fetch_value('category_name', 'Categories')]
-#     for category in categories:
-#         button = InlineKeyboardButton(category, callback_data=category)
-#         markup.insert(button)
-#     markup.insert(InlineKeyboardButton('Next', callback_data='next'))
-#     return markup
 
 
 def confirmation_keys() -> InlineKeyboardMarkup:
@@ -248,8 +230,9 @@ async def confirm_paid_consultation_request() -> InlineKeyboardMarkup:
 async def charge_paid_consultation_keys(request_id, consultant_id) -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup()
     markup.insert(InlineKeyboardButton('Confirm',
-                                       callback_data=f'paid_consultation_confirm_{request_id}'))
-    markup.insert(InlineKeyboardButton('Reject', callback_data=f'paid_consultation_reject_{request_id}_{consultant_id}'))
+                                       callback_data=f'paid_consultation_confirm_{request_id}_{consultant_id}'))
+    markup.insert(
+        InlineKeyboardButton('Reject', callback_data=f'paid_consultation_reject_{request_id}_{consultant_id}'))
     return markup
 
 

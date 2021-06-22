@@ -8,7 +8,7 @@ from aiogram.types import CallbackQuery, Message, ContentTypes
 from aiogram.utils.parts import split_text
 
 from data.config import PAYMENTS_PROVIDER_TOKEN
-from filters.filters import PaidConsultationCategories, PaidConsultationRequest, ChargeConsultationRequest
+from filters.filters import PaidConsultationCategories, PaidConsultationRequest
 from handlers.users.tools import try_send_message
 from keyboards.inline.keyboard import (
     create_request_keys,
@@ -24,6 +24,7 @@ from keyboards.inline.keyboard import start_keys
 from loader import dp, db, bot, questions_api
 from utils.misc import rate_limit
 from handlers.users.ask_question import get_image_url, image_from_url_to_base64
+from .tools import transform_fee_amount
 
 
 @rate_limit(5)
@@ -280,18 +281,18 @@ async def assistant_contact_details(message: Message, state: FSMContext):
     name = message.from_user.full_name
     data = await state.get_data()
     await state.finish()
-    await db.assign_assistance(user_id, name, contact_details, data['request_id'])
+    assistance_id = await db.assign_assistance(user_id, name, contact_details, data['request_id'])
     await bot.send_message(user_id, text='Great, I notify the requester that you are willing to consult on the problem.'
                                          ' If he confirms that request is still relevant, we will send you the contact '
                                          'information.')
     experience = await db.get_consultant_experience(user_id)
-    await notify_requester_about_paid_consultation(data['request_id'], experience, user_id)
+    await notify_requester_about_paid_consultation(data['request_id'], experience, assistance_id['id'])
     logging.info(f'CREATE PAID REQUEST: {user_id} assistant_contact_details')
 
 
-async def notify_requester_about_paid_consultation(request_id, experience, consultant_id):
+async def notify_requester_about_paid_consultation(request_id, experience, assistance_id):
     request = await db.get_consultation_record(request_id)
-    fee_amount = request['budget'] / 100 if request['budget'] > 100 else 1
+    fee_amount = await transform_fee_amount(request['budget']) / 100
     user_id = request.get('user_id')
     await bot.send_message(user_id,
                            text=f'Hello! One assistant is ready to consult you on your request #{request_id}. '
@@ -299,8 +300,8 @@ async def notify_requester_about_paid_consultation(request_id, experience, consu
                                 f'Once you have paid the fee, we will share '
                                 "the assistant's contact details with you, so you can contact him directly.\n\n"
                                 f"<b>Consultant's experience:</b>\n{experience}\n"
-                                f"<b>Our fee:</b>{fee_amount} USD",
-                           reply_markup=await charge_paid_consultation_keys(request_id, consultant_id))
+                                f"<b>Our fee:</b> {fee_amount} USD",
+                           reply_markup=await charge_paid_consultation_keys(request_id, assistance_id))
     logging.info(f'CREATE PAID REQUEST: {user_id} notify_requester_about_paid_consultation')
 
 
@@ -324,22 +325,19 @@ async def reject_assistance_proposal(call: CallbackQuery):
 
 
 @rate_limit(5)
-@dp.callback_query_handler(ChargeConsultationRequest())
+@dp.callback_query_handler(Text(startswith='paid_consultation_confirm_'))
 async def approve_paid_consultation(call: CallbackQuery, state: FSMContext):
     await call.answer(cache_time=200)
     await call.message.edit_reply_markup()
     user_id = call.from_user.id
-    request_id = int(call.data.replace('paid_consultation_confirm_', ''))
+    ids = call.data.replace('paid_consultation_confirm_', '').split('_')
+    request_id = int(ids[0])
+    assistance_id = int(ids[1])
     request = await db.get_consultation_record(request_id)
     await PayConsultationFees.payment_state.set()
-    fee_amount = int(request['budget']) if int(request['budget']) > 100 else 100
-    assistant = await db.get_assistant(request_id)
+    fee_amount = await transform_fee_amount(request['budget'])
+    assistant = await db.get_assistant(assistance_id)
     await bot.get_chat(assistant['user_id'])
-    async with state.proxy() as data:
-        data['assistant_contact'] = assistant['contact']
-        data['assistant_id'] = assistant['user_id']
-        data['request_id'] = request_id
-        data['requester_contact'] = request['contact']
     prices = [
         types.LabeledPrice(label='Paid consultation', amount=fee_amount)
     ]
@@ -358,17 +356,18 @@ async def approve_paid_consultation(call: CallbackQuery, state: FSMContext):
         need_email=True,
         need_shipping_address=False,
         is_flexible=False,
-        payload='PAID_CONSULTATION',
+        payload=f'{request_id}_{assistance_id}',
         reply_markup=consultation_payment_keys()
     )
     async with state.proxy() as data:
         data['message_id'] = message_id['message_id']
+        data['request_id'] = request_id
     logging.info(f'CREATE PAID REQUEST: approve_paid_consultation')
 
 
 @dp.pre_checkout_query_handler(lambda query: True, state=PayConsultationFees.payment_state)
-async def checkout(query: types.PreCheckoutQuery):
-    await PayConsultationFees.checkout.set()
+async def checkout(query: types.PreCheckoutQuery, state: FSMContext):
+    await state.finish()
     logging.info(f'USER ID {query.from_user.id} checkout')
     await bot.answer_pre_checkout_query(pre_checkout_query_id=query.id, ok=True,
                                         error_message="Something went wrong. "
@@ -390,14 +389,17 @@ async def cancel_payment_consultation(call: CallbackQuery, state: FSMContext):
     logging.info(f'CREATE PAID REQUEST: {user_id} cancel_payment_consultation')
 
 
-@dp.message_handler(content_types=ContentTypes.SUCCESSFUL_PAYMENT, state=PayConsultationFees.checkout)
-async def got_payment(message: types.Message, state: FSMContext):
+@dp.message_handler(content_types=ContentTypes.SUCCESSFUL_PAYMENT)
+async def got_payment(message: types.Message):
     user_id = message.from_user.id
-    data = await state.get_data()
-    assistant_id = data['assistant_id']
-    assistant_chat = await bot.get_chat(chat_id=assistant_id)
-    assistant_contact = data['assistant_contact']
-    requester_contact = data['requester_contact']
+    data = message.successful_payment.invoice_payload.split("_")
+    request_id = int(data[0])
+    assistance_id = int(data[1])
+    assistant_record = await db.get_assistant(assistance_id)
+    assistant_chat = await bot.get_chat(chat_id=assistant_record['user_id'])
+    assistant_contact = assistant_record['contact']
+    request_data = await db.get_consultation_record(request_id)
+    requester_contact = request_data['contact']
     logging.info(f'PAID QUESTION MODE: USER ID {user_id} PAID FOR QUESTION')
     assistant_link = assistant_chat.user_url
     await bot.send_message(user_id,
@@ -407,12 +409,11 @@ async def got_payment(message: types.Message, state: FSMContext):
                            f"Telegram URL: {assistant_link}",
                            reply_markup=await start_keys(user_id))
     await send_client_contacts_to_consultant(
-        consultant_id=assistant_id,
+        consultant_id=assistant_record['user_id'],
         client_id=user_id,
         client_contact=requester_contact,
-        request_id=data['request_id']
+        request_id=request_id
     )
-    await state.finish()
     logging.info(f'CREATE PAID REQUEST: {user_id} got_payment')
 
 

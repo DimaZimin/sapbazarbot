@@ -39,3 +39,10 @@ async def try_send_message(
         logging.info(f"Target [ID:{user_id}]: success")
         return True
     return False
+
+
+async def transform_fee_amount(amount) -> int:
+    if int(amount) < 100:
+        return 100
+    if int(amount) > 1000:
+        return 1000

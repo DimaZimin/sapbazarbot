@@ -63,9 +63,3 @@ class PaidConsultationRequest(BoundFilter):
     async def check(self, call: types.CallbackQuery) -> bool:
         callback_data = "confirm_paid_request_"
         return call.data.startswith(callback_data)
-
-
-class ChargeConsultationRequest(BoundFilter):
-    async def check(self, call: types.CallbackQuery) -> bool:
-        callback_data = "paid_consultation_confirm_"
-        return call.data.startswith(callback_data)

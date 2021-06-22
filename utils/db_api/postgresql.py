@@ -127,9 +127,10 @@ class Database:
     async def create_table_assistants(self):
         sql = """
         CREATE TABLE IF NOT EXISTS assistants (
+        id SERIAL PRIMARY KEY,
         user_id BIGINT NOT NULL,
         name VARCHAR(255),
-        contact VARCHAR(255),
+        contact TEXT,
         request INT REFERENCES consultation_requests(id) ON DELETE CASCADE
         )
         """
@@ -430,7 +431,7 @@ class Database:
     async def assign_assistance(self, assistant_id, name, contact, request_id):
         sql = """
         INSERT INTO assistants(user_id, name, contact, request)
-        VALUES ($1, $2, $3, $4) RETURNING request;
+        VALUES ($1, $2, $3, $4) RETURNING id;
         """
         return await self.pool.fetchrow(sql, assistant_id, name, contact, request_id)
 
@@ -440,11 +441,23 @@ class Database:
         """
         return await self.pool.fetchrow(sql, record_id)
 
-    async def get_assistant(self, request_id):
+    async def get_assistant(self, assistance_id):
+        sql = """
+        SELECT * FROM assistants WHERE id = $1;
+        """
+        return await self.pool.fetchrow(sql, assistance_id)
+
+    async def select_assistants_for_request(self, request_id):
         sql = """
         SELECT * FROM assistants WHERE request = $1;
         """
-        return await self.pool.fetchrow(sql, request_id)
+        return await self.pool.fetch(sql, request_id)
+
+    async def select_assigned_tasks(self, user_id):
+        sql = """
+        SELECT * FROM assistants WHERE user_id = $1;
+        """
+        return await self.pool.fetch(sql, user_id)
 
     async def get_requests_for_client(self, user_id):
         sql = """
