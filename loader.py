@@ -10,11 +10,11 @@ from utils.parsers.api_questions import QuestionsAPI
 import os
 
 bot = Bot(token=config.BOT_TOKEN, parse_mode=types.ParseMode.HTML)
-storage = RedisStorage2()
+storage = RedisStorage2(host=config.REDIS_HOST, port=config.REDIS_PORT, db=config.REDIS_DB_FSM)
 dp = Dispatcher(bot, storage=storage)
 
 
-json_db = '/Users/dima/PycharmProjects/sapbazar/ad_id.json'
+json_db = os.path.join(os.getcwd(), 'ad_id.json')
 loop = asyncio.get_event_loop()
 db = Database(loop)
 mysql_db = SAPBazarSQL()

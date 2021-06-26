@@ -23,7 +23,7 @@ async def start_keys(admin_id):
                                         callback_data=start_subscription.new(action='subscribe')))
     else:
         markup.insert(InlineKeyboardButton(text="❌ Unsubscribe", callback_data="unsubscribe"))
-    markup.insert(InlineKeyboardButton(text="🙋 Requests", callback_data='create_request'))
+    markup.insert(InlineKeyboardButton(text="🙋 Create request", callback_data='create_request'))
     # markup.insert(InlineKeyboardButton(text='🙋 My questions', callback_data='my_questions'))
     # markup.insert(InlineKeyboardButton(text='See all questions', callback_data='all_questions'))
     markup.insert(InlineKeyboardButton(text="✉️ Contact", url='telegram.me/gurusap'))

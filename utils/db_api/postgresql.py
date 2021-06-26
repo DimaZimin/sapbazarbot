@@ -13,7 +13,7 @@ class Database:
                 database='sap_bazar',
                 user=config.PGUSER,
                 password=config.PGPASSWORD,
-                host=config.ip
+                host='db'
             )
         )
 

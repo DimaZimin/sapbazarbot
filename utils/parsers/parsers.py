@@ -50,7 +50,7 @@ class JsonManager:
     def get_values(self, key: str):
         with open(self.file, 'r') as json_file:
             data = json.load(json_file)
-            return data[key]
+            return data.get(key) if data.get(key) else []
 
     def update_job_urls(self):
         with open(self.file, 'r') as json_file:
