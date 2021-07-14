@@ -405,7 +405,7 @@ class Database:
         sql = """
         SELECT is_mentor FROM users WHERE user_id = $1
         """
-        value = await self.pool.fetchval(sql, user_id)
+        value = await self.pool.fetchval(sql, int(user_id))
         return True if value else False
 
     async def select_mentors_for_category(self, category):
