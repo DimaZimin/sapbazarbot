@@ -19,7 +19,6 @@ Pillow==8.1.0
 protobuf==3.13.0
 Pygments==2.7.4
 pygount==1.2.4
-pyodbc==4.0.30
 python-dotenv==0.14.0
 python-slugify==5.0.2
 pytz==2020.1
