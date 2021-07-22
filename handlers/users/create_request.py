@@ -1,6 +1,8 @@
 import asyncio
+import datetime
 import logging
 
+import slugify
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
@@ -9,7 +11,7 @@ from aiogram.utils.parts import split_text
 
 from data.config import PAYMENTS_PROVIDER_TOKEN
 from filters.filters import PaidConsultationCategories, PaidConsultationRequest
-from handlers.users.tools import try_send_message
+from handlers.users.tools import try_send_message, project_id_generator
 from keyboards.inline.keyboard import (
     create_request_keys,
     sap_categories_keys,
@@ -21,7 +23,7 @@ from keyboards.inline.keyboard import (
 
 from states.states import PaidConsultationState, AssistanceState, PayConsultationFees
 from keyboards.inline.keyboard import start_keys
-from loader import dp, db, bot, questions_api
+from loader import dp, db, bot, questions_api, projects_db
 from utils.misc import rate_limit
 from handlers.users.ask_question import get_image_url, image_from_url_to_base64
 from .tools import transform_fee_amount
@@ -224,7 +226,27 @@ async def approve_consultation_request(call: CallbackQuery, state: FSMContext):
             user['user_id'] for user in await db.select_all_mentors() if user['user_id'] != user_id
         ]
     await send_request_to_consultants(consultants, data, record_id)
+    description = f"{data['content']}\n\nImage: {data['image_url']}" if data['image_url'] else data['content']
+    await create_project_in_db(record_id, data['budget'], data['category'], description)
     logging.info(f'CREATE PAID REQUEST: {user_id} REQUEST APPROVED')
+
+
+async def create_project_in_db(request_id, budget, category, description):
+    project_id = project_id_generator()
+    title = f'SAP assistance request {request_id} in {category}'
+    projects_db.insert(
+        'projects',
+        projectid=project_id,
+        userid='579',
+        title=title,
+        slug=slugify.slugify(title),
+        budget=budget,
+        category=category,
+        description=description,
+        closed=0,
+        complete=0,
+        date_added=datetime.datetime.today().date()
+    )
 
 
 async def send_request_to_consultants(consultants, data, record_id):

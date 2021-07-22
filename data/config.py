@@ -22,7 +22,8 @@ redis = {
     'address': (ip, 6379),
     'encoding': 'utf8'
 }
-
+PRODUCTION = int(os.getenv('PRODUCTION', 0))
+PGHOST = 'db' if PRODUCTION else str(os.getenv('PGHOST'))
 PGUSER = str(os.getenv("PGUSER"))
 PGPASSWORD = str(os.getenv("PGPASSWORD"))
 DATABASE = str(os.getenv("DATABASE"))
@@ -32,6 +33,10 @@ MYSQL_HOST = str(os.getenv('MYSQL_HOST'))
 MYSQL_DB = str(os.getenv('MYSQL_DB'))
 MYSQL_USER = str(os.getenv('MYSQL_USER'))
 MYSQL_PASS = str(os.getenv('MYSQL_PASS'))
+DB_PROJ_DATABASE = str(os.getenv('DB_PROJ_DATABASE'))
+DB_PROJ_USERNAME = str(os.getenv('DB_PROJ_USERNAME'))
+DB_PROJ_PASSWORD = str(os.getenv('DB_PROJ_PASSWORD'))
+
 
 REDIS_HOST = str(os.getenv("REDIS_HOST", default="localhost"))
 REDIS_PORT = int(os.getenv("REDIS_PORT", default=6379))

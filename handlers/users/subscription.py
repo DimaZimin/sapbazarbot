@@ -3,12 +3,11 @@ import logging
 
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
-from aiogram.utils.exceptions import BotBlocked, RetryAfter, UserDeactivated, ChatNotFound, TelegramAPIError
+from aiogram.utils.exceptions import BotBlocked, RetryAfter, ChatNotFound
 from aiogram.types import CallbackQuery, Message
-from filters.filters import SubscriptionCategories, SubscriptionLocations
+from filters.filters import SubscriptionCategories
 from handlers.users.tools import try_send_message
-from keyboards.inline.keyboard import start_subscription, sap_categories_keys, \
-    subscription_locations_keys, blog_sub
+from keyboards.inline.keyboard import start_subscription, sap_categories_keys, blog_sub
 
 from states.states import Form
 from keyboards.inline.keyboard import start_keys
@@ -164,7 +163,7 @@ async def job_task(wait_time):
                         await bot.send_message(user['user_id'], text=f"<a href='{ad_url}'>New job opening: "
                                                                      f"{title}</a>"
                                                                      f"\nContact: {await contact_to_send(contact)}",
-                                                                     parse_mode='HTML')
+                                               parse_mode='HTML')
                     except BotBlocked:
                         pass
         json_manager.update_job_urls()
@@ -190,7 +189,8 @@ async def blog_task(wait_time):
                         logging.info(f"SENDING URL TO: {subscriber}")
                         text_to_send = f'<a href="{post_url}"> Hey! We got a new post here! Check this out.</a>'
                         user_id = subscriber['user_id']
-                        if await try_send_message(int(user_id), text=text_to_send, reply_markup=await start_keys(user_id)):
+                        if await try_send_message(int(user_id), text=text_to_send,
+                                                  reply_markup=await start_keys(user_id)):
                             count += 1
                         await asyncio.sleep(.05)
                 finally:
@@ -203,10 +203,10 @@ async def blog_task_for_channel(wait_time):
         await asyncio.sleep(wait_time)
         json_manager = parsers.JsonManager(json_db)
         new_posts = json_manager.new_blog_post('blog_channel')
-
+        logging.info(f"PERFORMING BLOG SCRAPING FOR CHANNEL\nNEW POSTS: {new_posts}")
         if len(new_posts) >= 5:
             text_to_send = "\n\n".join([
-                f'<a href="{post[0]}">{post[2]}</a> in {post[1]}' for post in new_posts[:5]
+                f'<a href="{post[0]}">{post[2]}</a> in {post[1]}' for post in new_posts[-5:]
             ])
             try:
                 await bot.send_message(chat_id='@sapbazar', text=f'New posts:\n\n{text_to_send}',

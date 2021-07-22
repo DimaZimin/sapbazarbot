@@ -1,5 +1,7 @@
 import asyncio
 import logging
+import string
+import random
 
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.exceptions import BotBlocked, ChatNotFound, RetryAfter, UserDeactivated, TelegramAPIError
@@ -46,3 +48,8 @@ async def transform_fee_amount(amount) -> int:
         return 100
     if int(amount) > 1000:
         return 1000
+
+
+def project_id_generator():
+    chars = string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for _ in range(16))

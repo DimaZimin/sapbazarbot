@@ -5,9 +5,15 @@ from utils.db_api import sqlmanager
 
 class SAPBazarSQL:
 
-    @staticmethod
-    def __fetchone(sql):
-        with sqlmanager.MySQLManager() as db:
+    def __init__(self, host, user, password, database):
+        self.host = host
+        self.user = user
+        self.password = password
+        self.database = database
+        self.db_manager = sqlmanager.MySQLManager(self.host, self.user, self.password, self.database)
+
+    def __fetchone(self, sql):
+        with self.db_manager as db:
             db.execute(sql)
             result = db.fetchone()
         try:
@@ -15,9 +21,8 @@ class SAPBazarSQL:
         except TypeError or IndexError:
             return None
 
-    @staticmethod
-    def __fetchall(sql):
-        with sqlmanager.MySQLManager() as db:
+    def __fetchall(self, sql):
+        with self.db_manager as db:
             db.execute(sql)
             result = db.fetchall()
         try:
@@ -25,10 +30,9 @@ class SAPBazarSQL:
         except TypeError or IndexError:
             return None
 
-    @staticmethod
-    def __execute(sql):
-        with sqlmanager.MySQLManager() as db:
-            db.execute(sql)
+    def __execute(self, sql, val):
+        with self.db_manager as db:
+            db.execute(sql, val)
 
     def select_raw(self, sql):
         return self.__fetchall(sql)
@@ -36,8 +40,10 @@ class SAPBazarSQL:
     def insert(self, table, **kwargs):
         sql = f"""
                 INSERT INTO {table}({', '.join(kwargs.keys())}) 
-                VALUES ({', '.join([f"'{key}'" for key in kwargs.values()])})"""
-        return self.__execute(sql)
+                VALUES ({', '.join(['%s' for key in kwargs])})"""
+        val = tuple(kwargs.values())
+        print('1 row inserted')
+        return self.__execute(sql, val)
 
     def insert_category(self, category):
         self.insert('categories', name=category, var_name=category, title=category)
@@ -53,26 +59,29 @@ class SAPBazarSQL:
     def insert_job(self, company, title, description, category, location):
         sql = f"""INSERT INTO jobs(type_id, employer_id, category_id, title, description, 
                                    created_on, expires, is_active, views_count, city_id, apply_online, company) 
-                  VALUES (1, 144,(SELECT id FROM categories WHERE name = '{category}'), '{title}','{description}', 
-                          NOW(), NOW() + INTERVAL 30 DAY, 1, 0, (SELECT id FROM cities WHERE name = '{location}'), 
-                          1,'{company}');"""
+                  VALUES (1, 144,(SELECT id FROM categories WHERE name = %s), %s, %s, 
+                          NOW(), NOW() + INTERVAL 30 DAY, 1, 0, (SELECT id FROM cities WHERE name = %s), 
+                          1, %s);"""
+        val = (category, title, description, location, company)
         try:
-            return self.__execute(sql)
+            return self.__execute(sql, val)
         except IntegrityError:
             sql = f"""INSERT INTO jobs(type_id, employer_id, category_id, title, description, 
                                        created_on, expires, is_active, views_count, city_id, apply_online, company) 
-                              VALUES (1, 144,(SELECT id FROM categories WHERE name = '{category}'), '{title}',
-                                     '{description}', NOW(), NOW() + INTERVAL 30 DAY, 1, 0, 1, 1,'{company}');"""
-            return self.__execute(sql)
+                              VALUES (1, 144,(SELECT id FROM categories WHERE name = %s), %s,
+                                     '{description}', NOW(), NOW() + INTERVAL 30 DAY, 1, 0, 1, 1, %s);"""
+            val = (category, title, description, company)
+            return self.__execute(sql, val)
 
     def get_column_where(self, table, column, where, condition):
         sql = f"""
-        SELECT {column} FROM {table} WHERE {where} = '{condition}' 
+        SELECT {column} FROM {table} WHERE {where} = {condition}
         """
         return self.__fetchall(sql)
 
     def delete_row_where(self, table, where, condition):
         sql = f"""
-        DELETE FROM {table} WHERE {where} = {condition}
+        DELETE FROM {table}  WHERE %s = %s
         """
-        return self.__execute(sql)
+        val = (where, condition)
+        return self.__execute(sql, val)

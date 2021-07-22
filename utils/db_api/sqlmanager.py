@@ -5,11 +5,15 @@ from data import config
 
 class MySQLManager:
 
-    def __init__(self):
-        self.host = config.MYSQL_HOST
-        self.user = config.MYSQL_USER
-        self.password = config.MYSQL_PASS
-        self.database = config.MYSQL_DB
+    def __init__(self,
+                 host=config.MYSQL_HOST,
+                 user=config.MYSQL_USER,
+                 password=config.MYSQL_PASS,
+                 database=config.MYSQL_DB):
+        self.host = host
+        self.user = user
+        self.password = password
+        self.database = database
         self.connection = None
         self.cursor = None
 
@@ -22,4 +26,5 @@ class MySQLManager:
         return self.cursor
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self.connection.commit()
         self.connection.close()
