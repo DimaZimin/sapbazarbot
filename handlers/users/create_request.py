@@ -226,7 +226,8 @@ async def approve_consultation_request(call: CallbackQuery, state: FSMContext):
             user['user_id'] for user in await db.select_all_mentors() if user['user_id'] != user_id
         ]
     await send_request_to_consultants(consultants, data, record_id)
-    description = f"{data['content']}\n\nImage: {data['image_url']}" if data['image_url'] else data['content']
+    description = f"{data['content']}\n\n<img src=\"{data['image_url']}\" alt=\"screenshot\">" \
+        if data['image_url'] else data['content']
     await create_project_in_db(record_id, data['budget'], data['category'], description)
     logging.info(f'CREATE PAID REQUEST: {user_id} REQUEST APPROVED')
 
