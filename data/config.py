@@ -43,3 +43,9 @@ REDIS_PORT = int(os.getenv("REDIS_PORT", default=6379))
 REDIS_DB_FSM = int(os.getenv("REDIS_DB_FSM", default=0))
 REDIS_DB_JOBSTORE = int(os.getenv("REDIS_DB_JOBSTORE", default=1))
 REDIS_DB_JOIN_LIST = int(os.getenv("REDIS_DB_JOIN_LIST", default=2))
+
+
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+PORT = os.getenv('PORT')
