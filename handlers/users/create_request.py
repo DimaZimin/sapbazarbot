@@ -23,7 +23,7 @@ from keyboards.inline.keyboard import (
 
 from states.states import PaidConsultationState, AssistanceState, PayConsultationFees
 from keyboards.inline.keyboard import start_keys
-from loader import dp, db, bot, questions_api, projects_db
+from loader import dp, db, bot, questions_api, projects_db, mail_man
 from utils.misc import rate_limit
 from handlers.users.ask_question import get_image_url, image_from_url_to_base64
 from .tools import transform_fee_amount
@@ -228,26 +228,48 @@ async def approve_consultation_request(call: CallbackQuery, state: FSMContext):
     await send_request_to_consultants(consultants, data, record_id)
     description = f"{data['content']}\n\n<img src=\"{data['image_url']}\" alt=\"screenshot\">" \
         if data['image_url'] else data['content']
-    await create_project_in_db(record_id, data['budget'], data['category'], description)
+    url = await create_project_in_db(record_id, data['budget'], data['category'], description)
+    if url:
+        await send_mass_mail_to_category_users(category=data['category'], request_id=record_id, url=url)
     logging.info(f'CREATE PAID REQUEST: {user_id} REQUEST APPROVED')
+
+
+async def send_mass_mail_to_category_users(category, request_id, url):
+    logging.info(f'SENDING MASS MAIL URL {url}')
+    try:
+        with projects_db as mysqldb:
+            users = mysqldb.select_category_users(category)
+    except Exception as e:
+        logging.error(e)
+        return None
+    if users:
+        body = f"New SAP assistance request nr {request_id} has been posted. Please help if you can: {url}"
+        mail_man.send_mass_mail(
+            users, body,
+        )
 
 
 async def create_project_in_db(request_id, budget, category, description):
     project_id = project_id_generator()
     title = f'SAP assistance request {request_id} in {category}'
-    projects_db.insert(
-        'projects',
-        projectid=project_id,
-        userid='579',
-        title=title,
-        slug=slugify.slugify(title),
-        budget=budget,
-        category=category,
-        description=description,
-        closed=0,
-        complete=0,
-        date_added=datetime.datetime.today().date()
-    )
+    try:
+        with projects_db as sqldb:
+            sqldb.insert(
+                'projects',
+                projectid=project_id,
+                userid='579',
+                title=title,
+                slug=slugify.slugify(title),
+                budget=budget,
+                category=category,
+                description=description,
+                closed=0,
+                complete=0,
+                date_added=datetime.datetime.today().date()
+            )
+        return mail_man.create_url_for_project(project_id=project_id, slug=slugify.slugify(title))
+    except Exception as e:
+        logging.error(f'INSERT ERROR: {e}')
 
 
 async def send_request_to_consultants(consultants, data, record_id):
