@@ -13,8 +13,8 @@ class MailManager:
     @staticmethod
     def message_to_sent(url: str, category: str, request_id, name: str) -> str:
         return f"Subject: New sap assistance request nr{request_id} in {category}.\n" \
-               f"Dear {name}! There has been posted new SAP assistance request in SAP {category}" \
-               f"and your experience is needed. Please help our colleague if you can. " \
+               f"Dear {name}!\nThere has been posted new SAP assistance request in SAP {category} " \
+               f"and your support is needed. Please help our colleague if you can. " \
                f"The project information is available by this link: {url}"
 
     def send_mass_mail(self, receivers: list, url: str, category: str, request_id: str):
@@ -40,4 +40,4 @@ class MailManager:
 
     @staticmethod
     def create_url_for_project(project_id, slug):
-        return f"https://projects.sapbazar.com/projects/{project_id}/{slug}"
+        return f"https://project.sapbazar.com/projects/{project_id}/{slug}"
