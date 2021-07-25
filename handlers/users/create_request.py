@@ -245,9 +245,8 @@ async def send_mass_mail_to_category_users(category, request_id, url):
         logging.error(e)
         return None
     if users:
-        body = f"New SAP assistance request nr {request_id} has been posted. Please help if you can: {url}"
         mail_man.send_mass_mail(
-            users, body,
+            receivers=users, category=category, request_id=request_id, url=url
         )
 
 
