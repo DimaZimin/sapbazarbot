@@ -24,6 +24,7 @@ from keyboards.inline.keyboard import (
 from states.states import PaidConsultationState, AssistanceState, PayConsultationFees
 from keyboards.inline.keyboard import start_keys
 from loader import dp, db, bot, questions_api, projects_db, mail_man
+from utils.db_api.sqlmanager import MySQLDatabase
 from utils.misc import rate_limit
 from handlers.users.ask_question import get_image_url, image_from_url_to_base64
 from .tools import transform_fee_amount
@@ -254,11 +255,11 @@ async def create_project_in_db(request_id, budget, category, description):
     project_id = project_id_generator()
     title = f'SAP assistance request {request_id} in {category}'
     try:
-        with projects_db as sqldb:
+        with MySQLDatabase() as sqldb:
             sqldb.insert(
                 'projects',
                 projectid=project_id,
-                userid='579',
+                userid='6655',
                 title=title,
                 slug=slugify.slugify(title),
                 budget=budget,
@@ -345,7 +346,7 @@ async def notify_requester_about_paid_consultation(request_id, experience, assis
     user_id = request.get('user_id')
 
     await bot.send_message(user_id,
-                           text=f'Hello! One assistant is ready to consult you on your request #{request_id}. '
+                           text=f'Hello! O ne assistant is ready to consult you on your request #{request_id}. '
                                 f'If it is still relevant to you, please proceed with payment. '
                                 f'Once you have paid the fee, we will share '
                                 "the assistant's contact details with you, so you can contact him directly.\n\n"

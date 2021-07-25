@@ -22,14 +22,6 @@ mysql_db = SAPBazarSQL(config.MYSQL_HOST, config.MYSQL_USER, config.MYSQL_PASS, 
 questions_api = QuestionsAPI()
 json_answers = os.path.join(os.getcwd(), "/answers.json")
 
-
-projects_db = MySQLDatabase(
-    host=config.MYSQL_HOST,
-    user=config.DB_PROJ_USERNAME,
-    password=config.DB_PROJ_PASSWORD,
-    database=config.DB_PROJ_DATABASE
-)
-
 mail_man = sendmail.MailManager(
     host=config.EMAIL_HOST,
     port=config.PORT,
