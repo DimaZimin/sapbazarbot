@@ -44,10 +44,12 @@ async def try_send_message(
 
 
 async def transform_fee_amount(amount) -> int:
-    if int(amount) < 100:
+    if int(amount) <= 100:
         return 100
-    if int(amount) > 1000:
+    elif int(amount) > 1000:
         return 1000
+    else:
+        return amount
 
 
 def project_id_generator():

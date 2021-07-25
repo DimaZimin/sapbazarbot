@@ -32,16 +32,20 @@ class MySQLManager:
 
 class MySQLDatabase:
     def __init__(self, host, user, password, database):
-        self._conn = mysql.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=database
-        )
-        self._cursor = self._conn.cursor()
+        self.host = host,
+        self.user = user,
+        self.password = password,
+        self.database = database
 
     def __enter__(self):
-        return self
+        self._conn = mysql.connect(
+            host=self.host,
+            user=self.user,
+            password=self.password,
+            database=self.database
+        )
+        self._cursor = self._conn.cursor()
+        return self._cursor
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()

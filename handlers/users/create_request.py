@@ -341,7 +341,8 @@ async def notify_requester_about_paid_consultation(request_id, experience, assis
     request = await db.get_consultation_record(request_id)
     total_budget = await transform_fee_amount(request['budget'])
     logging.info(f"notify_requester_about_paid_consultation: {request}, budget: {total_budget}")
-    fee_amount = total_budget / 100
+    try:
+        fee_amount = total_budget / 100
     user_id = request.get('user_id')
 
     await bot.send_message(user_id,
