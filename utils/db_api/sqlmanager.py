@@ -31,24 +31,29 @@ class MySQLManager:
 
 
 class MySQLDatabase:
-    def __init__(self, host, user, password, database):
-        self.host = host,
-        self.user = user,
-        self.password = password,
+    def __init__(self,
+                 host=config.MYSQL_HOST,
+                 user=config.DB_PROJ_USERNAME,
+                 password=config.DB_PROJ_PASSWORD,
+                 database=config.DB_PROJ_DATABASE):
+        self.host = host
+        self.user = user
+        self.password = password
         self.database = database
-
-    def __enter__(self):
         self._conn = mysql.connect(
             host=self.host,
             user=self.user,
             password=self.password,
             database=self.database
+
         )
         self._cursor = self._conn.cursor()
-        return self._cursor
+
+    def __enter__(self):
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+        self.close(commit=True)
 
     @property
     def connection(self):
@@ -102,7 +107,6 @@ class MySQLDatabase:
                 INSERT INTO {table}({', '.join(kwargs.keys())}) 
                 VALUES ({', '.join(['%s' for key in kwargs])})"""
         val = tuple(kwargs.values())
-
         self.execute(sql, params=val)
         self.commit()
         print('1 row inserted')
