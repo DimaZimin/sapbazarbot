@@ -23,7 +23,7 @@ from keyboards.inline.keyboard import (
 
 from states.states import PaidConsultationState, AssistanceState, PayConsultationFees
 from keyboards.inline.keyboard import start_keys
-from loader import dp, db, bot, questions_api, projects_db, mail_man
+from loader import dp, db, bot, questions_api, mail_man
 from utils.db_api.sqlmanager import MySQLDatabase
 from utils.misc import rate_limit
 from handlers.users.ask_question import get_image_url, image_from_url_to_base64
@@ -238,7 +238,7 @@ async def approve_consultation_request(call: CallbackQuery, state: FSMContext):
 async def send_mass_mail_to_category_users(category, request_id, url):
     logging.info(f'SENDING MASS MAIL URL {url}')
     try:
-        with projects_db as mysqldb:
+        with MySQLDatabase() as mysqldb:
             users = mysqldb.select_category_users(category)
             logging.info(f'USERS RETRIEVED: {users}')
     except Exception as e:
