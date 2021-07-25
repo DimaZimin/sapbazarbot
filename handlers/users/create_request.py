@@ -239,6 +239,7 @@ async def send_mass_mail_to_category_users(category, request_id, url):
     try:
         with projects_db as mysqldb:
             users = mysqldb.select_category_users(category)
+            logging.info(f'USERS RETRIEVED: {users}')
     except Exception as e:
         logging.error(e)
         return None
@@ -336,9 +337,13 @@ async def assistant_contact_details(message: Message, state: FSMContext):
 
 
 async def notify_requester_about_paid_consultation(request_id, experience, assistance_id):
+
     request = await db.get_consultation_record(request_id)
-    fee_amount = await transform_fee_amount(request['budget']) / 100
+    total_budget = await transform_fee_amount(request['budget'])
+    logging.info(f"notify_requester_about_paid_consultation: {request}, budget: {total_budget}")
+    fee_amount = total_budget / 100
     user_id = request.get('user_id')
+
     await bot.send_message(user_id,
                            text=f'Hello! One assistant is ready to consult you on your request #{request_id}. '
                                 f'If it is still relevant to you, please proceed with payment. '
