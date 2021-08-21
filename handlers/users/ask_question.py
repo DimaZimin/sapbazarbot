@@ -14,7 +14,7 @@ from data.config import BOT_TOKEN, PAYMENTS_PROVIDER_TOKEN
 from filters.filters import QuestionCategories
 from handlers.users.tools import try_send_message
 from keyboards.inline.keyboard import sap_categories_keys, question_review_keys, start_keys, \
-    answer_question_keys, feedback_answer_keys, reply_for_comment_keys, question_payment_keys
+    answer_question_keys, feedback_answer_keys, reply_for_comment_keys, question_payment_keys, question_category_keys
 from loader import dp, bot, db, questions_api
 
 from states.states import StartQuestion, AnswerQuestionState, CommentState, ReplyCommentState
@@ -101,7 +101,7 @@ async def process_picture(message: Message, state: FSMContext):
     await StartQuestion.category_state.set()
     await bot.send_chat_action(user_id, action='typing')
     await bot.send_message(user_id, 'Please, choose a category',
-                           reply_markup=await sap_categories_keys("QuestionCategory_"))
+                           reply_markup=await question_category_keys())
 
 
 async def check_if_string_has_sap(string):
@@ -139,9 +139,7 @@ async def process_question_category(call: CallbackQuery, state: FSMContext):
                                          f"<b>Your telegram ID</b>:\n"
                                          f"{data['email']}\n"
                                          f"<b>Attached screenshot:</b>\n"
-                                         f"{data['image_url'] if data['image_url'] else 'No attachment'}\n\n"
-                                         f"\nSelect paid or free option. Please note, that paid questions "
-                                         f"will be answered by our experts in a short period time.",
+                                         f"{data['image_url'] if data['image_url'] else 'No attachment'}\n\n",                                       
                            reply_markup=question_review_keys())
 
 
