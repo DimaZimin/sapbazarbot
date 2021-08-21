@@ -23,6 +23,7 @@ async def start_keys(admin_id):
                                         callback_data=start_subscription.new(action='subscribe')))
     else:
         markup.insert(InlineKeyboardButton(text="❌ Unsubscribe", callback_data="unsubscribe"))
+    markup.insert(InlineKeyboardButton(text='❓ Ask question', callback_data='ask_question'))
     markup.insert(InlineKeyboardButton(text="🙋 Create request", callback_data='create_request'))
     # markup.insert(InlineKeyboardButton(text='🙋 My questions', callback_data='my_questions'))
     # markup.insert(InlineKeyboardButton(text='See all questions', callback_data='all_questions'))
@@ -143,8 +144,8 @@ async def question_category_keys() -> InlineKeyboardMarkup:
 
 def question_review_keys() -> InlineKeyboardMarkup:
     markup = InlineKeyboardMarkup(row_width=1)
-    markup.insert(InlineKeyboardButton(text='Ask question for free', callback_data="questions_create"))
-    markup.insert(InlineKeyboardButton(text='Paid question', callback_data="paid_questions_create"))
+    markup.insert(InlineKeyboardButton(text='Submit', callback_data="questions_create"))
+    # markup.insert(InlineKeyboardButton(text='Paid question', callback_data="paid_questions_create"))
     markup.insert(InlineKeyboardButton(text='Cancel', callback_data="questions_cancel"))
     return markup
 
