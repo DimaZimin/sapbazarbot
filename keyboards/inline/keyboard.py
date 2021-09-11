@@ -264,3 +264,10 @@ async def notification_resolve_request_keys(request_id) -> InlineKeyboardMarkup:
     markup.insert(InlineKeyboardButton('Resolved', callback_data=f'client_request_resolved_{request_id}'))
     markup.insert(InlineKeyboardButton('Contact', url='telegram.me/gurusap'))
     return markup
+
+
+async def subscribe_keys() -> InlineKeyboardMarkup:
+    markup = InlineKeyboardMarkup(row_width=2)
+    markup.insert(InlineKeyboardButton('Subscribe', callback_data='subscribe_as_mentor'))
+    markup.insert(InlineKeyboardButton('Skip', callback_data='skip_subscribe'))
+    return markup

@@ -130,6 +130,7 @@ async def admin_stats(call: CallbackQuery):
     logging.info(f"ADMIN {user_id} ACTIVATES STATISTICS...")
     total_users = await db.total_users()
     subscribed_users = await db.subscribed_users()
+    count_mentors = await db.count_mentors()
     locations_list = [location['location_name'] for location in await db.fetch_value('location_name', 'Locations')]
     locations = "\n".join(locations_list)
     categories_list = [category['category_name'] for category in await db.fetch_value('category_name', 'Categories')]
@@ -140,6 +141,7 @@ async def admin_stats(call: CallbackQuery):
     await bot.send_message(chat_id=user_id,
                            text=f"<b>Total users:</b> {total_users[0]['count']}\n\n"
                                 f"<b>Subscribed users:</b> {subscribed_users[0]['count']}\n\n"
+                                f"<b>Mentors:</b> {count_mentors}\n\n"
                                 f"<b>Locations:</b>\n{locations}\n\n"
                                 f"<b>Categories:</b>\n{categories}\n\n"
                                 f"<b>Job posting:</b>\n{status}\n\n",

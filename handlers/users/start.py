@@ -4,7 +4,7 @@ from aiogram.dispatcher.filters import CommandStart
 from aiogram import types
 from aiogram.utils.exceptions import MessageIdentifierNotSpecified
 
-from keyboards.inline.keyboard import start_keys
+from keyboards.inline.keyboard import start_keys, subscribe_keys
 from loader import dp, bot, db
 
 # This is the text message that bot sends after /start command has been activated.
@@ -29,6 +29,16 @@ async def start(message: types.Message):
     logging.info(f'USER MESSAGE: {message.text}\tUSER ID: {message.chat.id} BEGINS SUBSCRIPTION')
     name = message.from_user.full_name
     user_id = message.from_user.id
-    await db.add_user(user_id, name)
-    await message.answer(text=f"Hello, {name}!\n" + START_TEXT,
-                         reply_markup=await start_keys(message.chat.id))
+    if not await db.is_mentor(user_id):
+        await bot.send_message(
+            text=f"Hello, {name}.\n"
+            f"Are you SAP expert and want to help community solve "
+            f"SAP problems while being paid? If so, please press 'Subscribe'"
+            f"to receive paid SAP requests.",
+            chat_id=user_id,
+            reply_markup=await subscribe_keys()
+        )
+    else:
+        await db.add_user(user_id, name)
+        await message.answer(text=f"Hello, {name}!\n" + START_TEXT,
+                             reply_markup=await start_keys(message.chat.id))

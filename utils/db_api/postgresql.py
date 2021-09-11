@@ -408,6 +408,12 @@ class Database:
         value = await self.pool.fetchval(sql, int(user_id))
         return True if value else False
 
+    async def count_mentors(self):
+        sql = """
+        SELECT COUNT(*) FROM users WHERE is_mentor = True;
+        """
+        return await self.pool.fetchval(sql)
+
     async def select_mentors_for_category(self, category):
         sql = """
         SELECT s.user_id FROM subscriptions s LEFT JOIN users u ON s.user_id = u.user_id 

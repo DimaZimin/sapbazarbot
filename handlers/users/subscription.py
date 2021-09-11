@@ -6,6 +6,7 @@ from aiogram.dispatcher.filters import Command
 from aiogram.utils.exceptions import BotBlocked, RetryAfter, ChatNotFound
 from aiogram.types import CallbackQuery, Message
 from filters.filters import SubscriptionCategories
+from handlers.users.start import START_TEXT
 from handlers.users.tools import try_send_message
 from keyboards.inline.keyboard import start_subscription, sap_categories_keys, blog_sub
 
@@ -14,6 +15,27 @@ from keyboards.inline.keyboard import start_keys
 from loader import dp, db, bot, json_db, questions_api
 from utils.parsers import parsers
 from utils.misc import rate_limit
+
+
+@rate_limit(5)
+@dp.callback_query_handler(text='subscribe_as_mentor')
+async def subscribe_as_mentor(call: CallbackQuery):
+    await call.answer(cache_time=60)
+    return await process_subscription(call)
+
+
+@rate_limit(5)
+@dp.callback_query_handler(text='skip_subscribe')
+async def skip_subscribe(call: CallbackQuery):
+    await call.answer(cache_time=60)
+    name = call.from_user.full_name
+    user_id = call.from_user.id
+    await call.message.edit_reply_markup()
+    await bot.send_message(
+        text=f"Hello, {name}!\n" + START_TEXT,
+        reply_markup=await start_keys(user_id),
+        chat_id=user_id
+    )
 
 
 @rate_limit(5)
@@ -253,3 +275,4 @@ async def points_task(wait_time):
                     await asyncio.sleep(.05)
             finally:
                 logging.info(f"{count} messages sent")
+
