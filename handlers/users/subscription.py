@@ -170,7 +170,7 @@ async def job_task(wait_time):
                 category = html.category()
                 location = html.location()
                 title = html.job_title()
-                contact = await db.get_username(f"{' '.join(html.job_title().split()[:-3])}")
+                contact = await db.get_username(title, category)
                 logging.info(f'LINK: {ad_url} CATEGORY: {category} LOCATION: {location}')
                 users = await db.select_user(location=location, category=category)
                 logging.info(f'USERS: {users}')

@@ -327,11 +327,11 @@ class Database:
         """
         return await self.pool.execute(sql)
 
-    async def get_username(self, job_title):
+    async def get_username(self, job_title, category):
         sql = f"""
-        SELECT username FROM job_posting_orders WHERE job_name LIKE '{job_title}%'
+        SELECT username FROM job_posting_orders WHERE job_name = $1 AND AND category = $2'
         """
-        return await self.pool.fetch(sql)
+        return await self.pool.fetchval(sql, job_title, category)
 
     async def create_question(self, user_id, post_id, user_email, external_user_id):
         sql = f"""
