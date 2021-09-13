@@ -148,10 +148,6 @@ async def unsubscribe_blog(message: Message):
     await bot.send_message(user_id, text='You have been unsubscribed from blog.')
 
 
-async def contact_to_send(contact):
-    return f"Contact: @{contact[0]['username']}" if contact else ''
-
-
 async def job_task(wait_time):
     """
     Main task function that runs every 'wait_time' value. Entry parameter must be an integer and corresponds to seconds.
@@ -177,14 +173,14 @@ async def job_task(wait_time):
                 logging.info(f"MESSAGE SENT TO CHANNEL")
                 await bot.send_message(chat_id='@sapbazar', text=f"<a href='{ad_url}'>New job opening: "
                                                                  f"{title}</a>"
-                                                                 f"\n{await contact_to_send(contact)}",
+                                                                 f"Contact: @gurusap",
                                        parse_mode='HTML')
                 for user in users:
                     logging.info(f'MESSAGE SENT TO: {user["user_id"]}')
                     try:
                         await bot.send_message(user['user_id'], text=f"<a href='{ad_url}'>New job opening: "
                                                                      f"{title}</a>"
-                                                                     f"\nContact: {await contact_to_send(contact)}",
+                                                                     f"\nContact: @gurusap",
                                                parse_mode='HTML')
                     except BotBlocked:
                         pass

@@ -329,7 +329,7 @@ class Database:
 
     async def get_username(self, job_title, category):
         sql = f"""
-        SELECT username FROM job_posting_orders WHERE job_name = $1 AND AND category = $2'
+        SELECT username FROM job_posting_orders WHERE job_name = $1 AND job_category = $2
         """
         return await self.pool.fetchval(sql, job_title, category)
 
