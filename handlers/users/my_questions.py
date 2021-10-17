@@ -234,7 +234,13 @@ async def send_questions_message(user_id: int, text: str, question, disable_noti
     :return:
     """
     try:
-        await bot.send_message(user_id, text, disable_notification=disable_notification, reply_markup=answer_question_direct_keys(question))
+        await bot.send_message(
+            user_id,
+            text,
+            disable_notification=disable_notification,
+            reply_markup=answer_question_direct_keys(question),
+            parse_mode='HTML'
+        )
     except BotBlocked:
         logging.error(f"Target [ID:{user_id}]: blocked by user")
     except ChatNotFound:
@@ -249,6 +255,7 @@ async def send_questions_message(user_id: int, text: str, question, disable_noti
         logging.exception(f"Target [ID:{user_id}]: failed")
     else:
         logging.info(f"Target [ID:{user_id}]: success")
+        logging.debug(f"Message: '{text}' has been sent")
         return True
     return False
 
@@ -282,6 +289,7 @@ async def unanswered_questions_task_users(wait_time):
                             text = f"<b>Hello, someone needs your help. Please, answer the question below, " \
                                    f"if you can.</b>\n\n{unanswered_by_id[q]}"
                             if await send_questions_message(int(user), text=text, question=q):
+                                logging.info(f"UNANSWERED QUESTION - QUESTION SENT: {unanswered_by_id[q]}")
                                 count += 1
                             await asyncio.sleep(.1)
                         await try_send_message(int(user), "Menu", reply_markup=await start_keys(int(user)))
